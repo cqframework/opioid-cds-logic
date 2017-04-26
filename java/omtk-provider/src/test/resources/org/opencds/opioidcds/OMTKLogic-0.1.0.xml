@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns="urn:hl7-org:elm:r1" xmlns:t="urn:hl7-org:elm-types:r1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fhir="http://hl7.org/fhir" xmlns:a="urn:hl7-org:cql-annotations:r1">
+   <identifier id="OMTKLogic" version="0.1.0"/>
+   <schemaIdentifier id="urn:hl7-org:elm" version="r1"/>
+   <usings>
+      <def localIdentifier="System" uri="urn:hl7-org:elm-types:r1"/>
+      <def localIdentifier="OMTK" uri="http://org.opencds/opioid-cds" version="0.1.0"/>
+   </usings>
+   <statements>
+      <def name="ToUCUM" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
+         <expression name="unit" xsi:type="OperandRef"/>
+         <operand name="unit">
+            <operandTypeSpecifier name="t:String" xsi:type="NamedTypeSpecifier"/>
+         </operand>
+      </def>
+      <def name="GetConversionFactor" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
+         <expression valueType="t:Decimal" value="1.5" xsi:type="Literal"/>
+         <operand name="ingredientCode">
+            <operandTypeSpecifier name="t:Integer" xsi:type="NamedTypeSpecifier"/>
+         </operand>
+      </def>
+      <def name="GetIngredients" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
+         <expression xsi:type="Query">
+            <source alias="C">
+               <expression xsi:type="Query">
+                  <source alias="SD">
+                     <expression xmlns:ns0="http://org.opencds/opioid-cds" dataType="ns0:MED_SCDC_FOR_DRUG" codeProperty="DRUG_RXCUI" xsi:type="Retrieve">
+                        <codes name="rxNormCode" xsi:type="OperandRef"/>
+                     </expression>
+                  </source>
+                  <where xsi:type="Exists">
+                     <operand xmlns:ns1="http://org.opencds/opioid-cds" dataType="ns1:NON_SURGICAL_OPIOID_TO_INCLUDE" codeProperty="DRUG_RXCUI" xsi:type="Retrieve">
+                        <codes path="DRUG_RXCUI" scope="SD" xsi:type="Property"/>
+                     </operand>
+                  </where>
+                  <return>
+                     <expression xsi:type="Tuple">
+                        <element name="rxNormCode">
+                           <value name="rxNormCode" xsi:type="OperandRef"/>
+                        </element>
+                        <element name="component">
+                           <value xsi:type="SingletonFrom">
+                              <operand xmlns:ns2="http://org.opencds/opioid-cds" dataType="ns2:MED_SCDC" codeProperty="SCDC_RXCUI" xsi:type="Retrieve">
+                                 <codes path="SCDC_RXCUI" scope="SD" xsi:type="Property"/>
+                              </operand>
+                           </value>
+                        </element>
+                        <element name="ingredientCode">
+                           <value path="INGREDIENT_RXCUI" xsi:type="Property">
+                              <source xsi:type="SingletonFrom">
+                                 <operand xmlns:ns3="http://org.opencds/opioid-cds" dataType="ns3:MED_INGREDIENT_FOR_SCDC" codeProperty="SCDC_RXCUI" xsi:type="Retrieve">
+                                    <codes path="SCDC_RXCUI" scope="SD" xsi:type="Property"/>
+                                 </operand>
+                              </source>
+                           </value>
+                        </element>
+                     </expression>
+                  </return>
+               </expression>
+            </source>
+            <let identifier="ingredient">
+               <expression xsi:type="SingletonFrom">
+                  <operand xmlns:ns4="http://org.opencds/opioid-cds" dataType="ns4:MED_INGREDIENT" codeProperty="INGREDIENT_RXCUI" xsi:type="Retrieve">
+                     <codes path="ingredientCode" scope="C" xsi:type="Property"/>
+                  </operand>
+               </expression>
+            </let>
+            <where xsi:type="Exists">
+               <operand xsi:type="Query">
+                  <source alias="IT">
+                     <expression xmlns:ns5="http://org.opencds/opioid-cds" dataType="ns5:MED_INGREDIENT_TYPE" codeProperty="INGREDIENT_RXCUI" xsi:type="Retrieve">
+                        <codes path="ingredientCode" scope="C" xsi:type="Property"/>
+                     </expression>
+                  </source>
+                  <where xsi:type="Equal">
+                     <operand path="INGREDIENT_TYPE" scope="IT" xsi:type="Property"/>
+                     <operand valueType="t:String" value="NonSurgicalOpioid" xsi:type="Literal"/>
+                  </where>
+               </operand>
+            </where>
+            <return>
+               <expression xsi:type="Tuple">
+                  <element name="rxNormCode">
+                     <value name="rxNormCode" xsi:type="OperandRef"/>
+                  </element>
+                  <element name="ingredientCode">
+                     <value path="ingredientCode" scope="C" xsi:type="Property"/>
+                  </element>
+                  <element name="ingredientName">
+                     <value path="INGREDIENT_NAME" xsi:type="Property">
+                        <source name="ingredient" xsi:type="QueryLetRef"/>
+                     </value>
+                  </element>
+                  <element name="strength">
+                     <value classType="t:Quantity" xsi:type="Instance">
+                        <element name="value">
+                           <value xsi:type="ToDecimal">
+                              <operand path="STRENGTH" xsi:type="Property">
+                                 <source path="component" scope="C" xsi:type="Property"/>
+                              </operand>
+                           </value>
+                        </element>
+                        <element name="unit">
+                           <value name="ToUCUM" xsi:type="FunctionRef">
+                              <operand path="STRENGTH_UNIT" xsi:type="Property">
+                                 <source path="component" scope="C" xsi:type="Property"/>
+                              </operand>
+                           </value>
+                        </element>
+                     </value>
+                  </element>
+               </expression>
+            </return>
+         </expression>
+         <operand name="rxNormCode">
+            <operandTypeSpecifier name="t:Integer" xsi:type="NamedTypeSpecifier"/>
+         </operand>
+      </def>
+      <def name="CalculateMMEs" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
+         <expression xsi:type="Flatten">
+            <operand xsi:type="Query">
+               <source alias="M">
+                  <expression name="medications" xsi:type="OperandRef"/>
+               </source>
+               <let identifier="Ingredients">
+                  <expression name="GetIngredients" xsi:type="FunctionRef">
+                     <operand path="rxNormCode" scope="M" xsi:type="Property"/>
+                  </expression>
+               </let>
+               <return>
+                  <expression xsi:type="Query">
+                     <source alias="I">
+                        <expression name="Ingredients" xsi:type="QueryLetRef"/>
+                     </source>
+                     <let identifier="factor">
+                        <expression name="GetConversionFactor" xsi:type="FunctionRef">
+                           <operand path="ingredientCode" scope="I" xsi:type="Property"/>
+                        </expression>
+                     </let>
+                     <return>
+                        <expression xsi:type="Tuple">
+                           <element name="rxNormCode">
+                              <value path="rxNormCode" scope="M" xsi:type="Property"/>
+                           </element>
+                           <element name="quantity">
+                              <value path="quantity" scope="M" xsi:type="Property"/>
+                           </element>
+                           <element name="daysSupply">
+                              <value path="daysSupply" scope="M" xsi:type="Property"/>
+                           </element>
+                           <element name="ingredientCode">
+                              <value path="ingredientCode" scope="I" xsi:type="Property"/>
+                           </element>
+                           <element name="ingredientName">
+                              <value path="ingredientName" scope="I" xsi:type="Property"/>
+                           </element>
+                           <element name="strength">
+                              <value path="strength" scope="I" xsi:type="Property"/>
+                           </element>
+                           <element name="conversionFactor">
+                              <value name="factor" xsi:type="QueryLetRef"/>
+                           </element>
+                           <element name="mme">
+                              <value classType="t:Quantity" xsi:type="Instance">
+                                 <element name="value">
+                                    <value xsi:type="Multiply">
+                                       <operand xsi:type="Divide">
+                                          <operand xsi:type="Multiply">
+                                             <operand path="value" xsi:type="Property">
+                                                <source path="strength" scope="I" xsi:type="Property"/>
+                                             </operand>
+                                             <operand xsi:type="ToDecimal">
+                                                <operand path="quantity" scope="M" xsi:type="Property"/>
+                                             </operand>
+                                          </operand>
+                                          <operand xsi:type="ToDecimal">
+                                             <operand path="daysSupply" scope="M" xsi:type="Property"/>
+                                          </operand>
+                                       </operand>
+                                       <operand name="factor" xsi:type="QueryLetRef"/>
+                                    </value>
+                                 </element>
+                                 <element name="unit">
+                                    <value xsi:type="Add">
+                                       <operand path="unit" xsi:type="Property">
+                                          <source path="strength" scope="I" xsi:type="Property"/>
+                                       </operand>
+                                       <operand valueType="t:String" value="/d" xsi:type="Literal"/>
+                                    </value>
+                                 </element>
+                              </value>
+                           </element>
+                        </expression>
+                     </return>
+                  </expression>
+               </return>
+            </operand>
+         </expression>
+         <operand name="medications">
+            <operandTypeSpecifier xsi:type="ListTypeSpecifier">
+               <elementType xsi:type="TupleTypeSpecifier">
+                  <element name="rxNormCode">
+                     <type name="t:Integer" xsi:type="NamedTypeSpecifier"/>
+                  </element>
+                  <element name="quantity">
+                     <type name="t:Integer" xsi:type="NamedTypeSpecifier"/>
+                  </element>
+                  <element name="daysSupply">
+                     <type name="t:Integer" xsi:type="NamedTypeSpecifier"/>
+                  </element>
+               </elementType>
+            </operandTypeSpecifier>
+         </operand>
+      </def>
+      <def name="TestCalculateMMEs" context="Patient" accessLevel="Public">
+         <expression name="CalculateMMEs" xsi:type="FunctionRef">
+            <operand xsi:type="List">
+               <element xsi:type="Tuple">
+                  <element name="rxNormCode">
+                     <value valueType="t:Integer" value="197696" xsi:type="Literal"/>
+                  </element>
+                  <element name="quantity">
+                     <value valueType="t:Integer" value="30" xsi:type="Literal"/>
+                  </element>
+                  <element name="daysSupply">
+                     <value valueType="t:Integer" value="30" xsi:type="Literal"/>
+                  </element>
+               </element>
+            </operand>
+         </expression>
+      </def>
+   </statements>
+</library>
+
