@@ -6,6 +6,9 @@
       <def localIdentifier="System" uri="urn:hl7-org:elm-types:r1"/>
       <def localIdentifier="OMTK" uri="http://org.opencds/opioid-cds" version="0.1.0"/>
    </usings>
+   <codeSystems>
+      <def name="RxNorm" id="http://www.nlm.nih.gov/research/umls/rxnorm" accessLevel="Public"/>
+   </codeSystems>
    <statements>
       <def name="ToUCUM" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
          <expression xsi:type="Case">
@@ -40,7 +43,11 @@
       </def>
       <def name="GetConversionFactor" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
          <expression xsi:type="Case">
-            <comparand name="ingredientCode" xsi:type="OperandRef"/>
+            <comparand xsi:type="ToInteger">
+               <operand path="code" xsi:type="Property">
+                  <source name="ingredientCode" xsi:type="OperandRef"/>
+               </operand>
+            </comparand>
             <caseItem>
                <when valueType="t:Integer" value="161" xsi:type="Literal"/>
                <then xsi:type="ToDecimal">
@@ -70,7 +77,11 @@
                <then xsi:type="Case">
                   <caseItem>
                      <when xsi:type="Equal">
-                        <operand name="doseFormCode" xsi:type="OperandRef"/>
+                        <operand xsi:type="ToInteger">
+                           <operand path="code" xsi:type="Property">
+                              <source name="doseFormCode" xsi:type="OperandRef"/>
+                           </operand>
+                        </operand>
                         <operand valueType="t:Integer" value="316987" xsi:type="Literal"/>
                      </when>
                      <then valueType="t:Decimal" value="12.6" xsi:type="Literal"/>
@@ -131,7 +142,11 @@
                <then xsi:type="Case">
                   <caseItem>
                      <when xsi:type="In">
-                        <operand name="doseFormCode" xsi:type="OperandRef"/>
+                        <operand xsi:type="ToInteger">
+                           <operand path="code" xsi:type="Property">
+                              <source name="doseFormCode" xsi:type="OperandRef"/>
+                           </operand>
+                        </operand>
                         <operand xsi:type="List">
                            <element valueType="t:Integer" value="970789" xsi:type="Literal"/>
                            <element valueType="t:Integer" value="317007" xsi:type="Literal"/>
@@ -142,14 +157,22 @@
                   </caseItem>
                   <caseItem>
                      <when xsi:type="Equal">
-                        <operand name="doseFormCode" xsi:type="OperandRef"/>
+                        <operand xsi:type="ToInteger">
+                           <operand path="code" xsi:type="Property">
+                              <source name="doseFormCode" xsi:type="OperandRef"/>
+                           </operand>
+                        </operand>
                         <operand valueType="t:Integer" value="346163" xsi:type="Literal"/>
                      </when>
                      <then valueType="t:Decimal" value="0.18" xsi:type="Literal"/>
                   </caseItem>
                   <caseItem>
                      <when xsi:type="In">
-                        <operand name="doseFormCode" xsi:type="OperandRef"/>
+                        <operand xsi:type="ToInteger">
+                           <operand path="code" xsi:type="Property">
+                              <source name="doseFormCode" xsi:type="OperandRef"/>
+                           </operand>
+                        </operand>
                         <operand xsi:type="List">
                            <element valueType="t:Integer" value="126542" xsi:type="Literal"/>
                            <element valueType="t:Integer" value="346163" xsi:type="Literal"/>
@@ -159,7 +182,11 @@
                   </caseItem>
                   <caseItem>
                      <when xsi:type="Equal">
-                        <operand name="doseFormCode" xsi:type="OperandRef"/>
+                        <operand xsi:type="ToInteger">
+                           <operand path="code" xsi:type="Property">
+                              <source name="doseFormCode" xsi:type="OperandRef"/>
+                           </operand>
+                        </operand>
                         <operand valueType="t:Integer" value="316987" xsi:type="Literal"/>
                      </when>
                      <then valueType="t:Decimal" value="7.2" xsi:type="Literal"/>
@@ -404,13 +431,13 @@
             </else>
          </expression>
          <operand name="ingredientCode">
-            <operandTypeSpecifier name="t:Integer" xsi:type="NamedTypeSpecifier"/>
+            <operandTypeSpecifier name="t:Code" xsi:type="NamedTypeSpecifier"/>
          </operand>
          <operand name="dailyDose">
             <operandTypeSpecifier name="t:Decimal" xsi:type="NamedTypeSpecifier"/>
          </operand>
          <operand name="doseFormCode">
-            <operandTypeSpecifier name="t:Integer" xsi:type="NamedTypeSpecifier"/>
+            <operandTypeSpecifier name="t:Code" xsi:type="NamedTypeSpecifier"/>
          </operand>
       </def>
       <def name="GetIngredients" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
@@ -519,7 +546,7 @@
             </return>
          </expression>
          <operand name="rxNormCode">
-            <operandTypeSpecifier name="t:Integer" xsi:type="NamedTypeSpecifier"/>
+            <operandTypeSpecifier name="t:Code" xsi:type="NamedTypeSpecifier"/>
          </operand>
       </def>
       <def name="CalculateMMEs" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
@@ -613,7 +640,7 @@
             <operandTypeSpecifier xsi:type="ListTypeSpecifier">
                <elementType xsi:type="TupleTypeSpecifier">
                   <element name="rxNormCode">
-                     <type name="t:Integer" xsi:type="NamedTypeSpecifier"/>
+                     <type name="t:Code" xsi:type="NamedTypeSpecifier"/>
                   </element>
                   <element name="quantity">
                      <type name="t:Integer" xsi:type="NamedTypeSpecifier"/>
@@ -630,7 +657,9 @@
             <operand xsi:type="List">
                <element xsi:type="Tuple">
                   <element name="rxNormCode">
-                     <value valueType="t:Integer" value="197696" xsi:type="Literal"/>
+                     <value code="197696" xsi:type="Code">
+                        <system name="RxNorm"/>
+                     </value>
                   </element>
                   <element name="quantity">
                      <value valueType="t:Integer" value="30" xsi:type="Literal"/>

@@ -2,6 +2,8 @@ library OMTKLogic version '0.1.0'
 
 using OMTK version '0.1.0'
 
+codesystem RxNorm: 'http://www.nlm.nih.gov/research/umls/rxnorm'
+
 //define MED_DOSE_FORMS: [MED_DOSE_FORM]
 
 // Given an RxNorm Code:
@@ -114,15 +116,15 @@ Tapentadol	0.4
 Tramadol	0.1
 
 */
-define function GetConversionFactor(ingredientCode Integer, dailyDose Decimal, doseFormCode Integer):
-  case ingredientCode
+define function GetConversionFactor(ingredientCode Code, dailyDose Decimal, doseFormCode Code):
+  case ToInteger(ingredientCode.code)
     when 161 then 0 //	Acetaminophen
     when 1191 then 0 //	Aspirin
     when 1223 then 0 //	Atropine
     when 1767 then 0 //	Brompheniramine
     when 1819 then ( //	Buprenorphine
       case 
-        when doseFormCode = 316987 then 12.6 // Transdermal system
+        when ToInteger(doseFormCode.code) = 316987 then 12.6 // Transdermal system
         else 30 // Tablet or Film (or Film in MCG)
       end
     ) 
@@ -136,10 +138,10 @@ define function GetConversionFactor(ingredientCode Integer, dailyDose Decimal, d
     when 3498 then 0 //	Diphenhydramine
     when 4337 then ( //	Fentanyl
       case
-        when doseFormCode in { 970789, 317007, 316992 } then 0.13 // Buccal Tablet, Sublingual Tablet, Oral Lozenge
-        when doseFormCode = 346163 then 0.18 // Buccal Film
-        when doseFormCode in { 126542, 346163 } then 0.16 // Nasal Spray, Mucosal Spray
-        when doseFormCode = 316987 then 7.2 // Transdermal system
+        when ToInteger(doseFormCode.code) in { 970789, 317007, 316992 } then 0.13 // Buccal Tablet, Sublingual Tablet, Oral Lozenge
+        when ToInteger(doseFormCode.code) = 346163 then 0.18 // Buccal Film
+        when ToInteger(doseFormCode.code) in { 126542, 346163 } then 0.16 // Nasal Spray, Mucosal Spray
+        when ToInteger(doseFormCode.code) = 316987 then 7.2 // Transdermal system
         else 1000 // Really ought to be an error because it represents a previously unencountered dose form....
       end
     )
@@ -189,14 +191,14 @@ define function GetConversionFactor(ingredientCode Integer, dailyDose Decimal, d
   make up the drug identified by the given rxNormCode as a list of tuples:
 
   List<Tuple {
-    rxNormCode Integer,
-    doseFormCode Integer,
-    ingredientCode Integer,
+    rxNormCode Code,
+    doseFormCode Code,
+    ingredientCode Code,
     ingredientName String,
     strength Quantity
   }>
 */
-define function GetIngredients(rxNormCode Integer):
+define function GetIngredients(rxNormCode Code):
   (
     [MED_SCDC_FOR_DRUG: DRUG_RXCUI in rxNormCode] SD
       where exists ([NON_SURGICAL_OPIOID_TO_INCLUDE: DRUG_RXCUI in SD.DRUG_RXCUI])
@@ -228,18 +230,18 @@ define function GetIngredients(rxNormCode Integer):
   as a list of tuples:
 
   List<Tuple { 
-    rxNormCode Integer, 
-    doseFormCode Integer,
+    rxNormCode Code,
+    doseFormCode Code,
     quantity Integer, 
     daysSupply Integer, 
-    ingredientCode Integer, 
+    ingredientCode Code,
     ingredientName String, 
     strength Quantity,
     conversionFactor Decimal,
     mme Quantity
   }>
 */
-define function CalculateMMEs(medications List<Tuple { rxNormCode Integer, quantity Integer, daysSupply Integer }>):
+define function CalculateMMEs(medications List<Tuple { rxNormCode Code, quantity Integer, daysSupply Integer }>):
   Flatten(
     medications M
       let Ingredients: GetIngredients(M.rxNormCode)
@@ -263,5 +265,5 @@ define function CalculateMMEs(medications List<Tuple { rxNormCode Integer, quant
   )
   
 define TestCalculateMMEs:
-  CalculateMMEs({ { rxNormCode: 197696, quantity: 30, daysSupply: 30 } })
+  CalculateMMEs({ { rxNormCode: Code '197696' from RxNorm, quantity: 30, daysSupply: 30 } })
   

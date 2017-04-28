@@ -12,6 +12,8 @@ import java.sql.SQLException;
  */
 public class OmtkDataProvider implements DataProvider {
 
+    public static final String RXNORM = "http://www.nlm.nih.gov/research/umls/rxnorm";
+
     public OmtkDataProvider(String connectionString) {
         if (connectionString == null) {
             throw new IllegalArgumentException("connectionString is null");

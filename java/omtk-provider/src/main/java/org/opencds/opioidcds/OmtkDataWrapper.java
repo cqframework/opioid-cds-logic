@@ -1,5 +1,7 @@
 package org.opencds.opioidcds;
 
+import org.opencds.cqf.cql.runtime.Code;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -106,6 +108,10 @@ public class OmtkDataWrapper implements Iterable<Object> {
                 OmtkRow row = new OmtkRow();
 
                 for (int i = 1; i <= metadata.getColumnCount(); i++) {
+                    if (metadata.getColumnName(i).endsWith("_RXCUI")) {
+                        row.setValue(metadata.getColumnName(i), new Code().withCode(((Integer)rs.getInt(i)).toString())
+                                .withSystem(OmtkDataProvider.RXNORM));
+                    }
                     row.setValue(metadata.getColumnName(i), rs.getObject(i));
                 }
 
