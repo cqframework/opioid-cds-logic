@@ -65,12 +65,12 @@ pretty horribly here, so rewrite it using "syntactic optimization" :)
 
 /*
   Normalizes the input units to UCUM units
-  
+
   Note guidance for UCUM presentation of medication units from SNOMED here:
   https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwjU3vLpicPTAhWFMGMKHRpOBUAQFggiMAA&url=https%3A%2F%2Fconfluence.ihtsdotools.org%2Fdownload%2Fattachments%2F17859188%2FExpressing%2520Units%2520of%2520Measure%2520for%2520Medicinal%2520Products.doc%3Fapi%3Dv2&usg=AFQjCNE5sboicqvJDUyXJ2im8VzBpgHE8A
-  
+
   The values listed here are the only ones currently present in the OMTK data
-  
+
   Based on the HL7 UCUM subset here:
   http://download.hl7.de/documents/ucum/ucumdata.html
 */
@@ -123,11 +123,11 @@ define function GetConversionFactor(ingredientCode Code, dailyDose Decimal, dose
     when 1223 then 0 //	Atropine
     when 1767 then 0 //	Brompheniramine
     when 1819 then ( //	Buprenorphine
-      case 
+      case
         when ToInteger(doseFormCode.code) = 316987 then 12.6 // Transdermal system
         else 30 // Tablet or Film (or Film in MCG)
       end
-    ) 
+    )
     when 1841 then 7 //	Butorphanol
     when 1886 then 0 //	Caffeine
     when 2101 then 0 //	Carisoprodol
@@ -186,8 +186,15 @@ define function GetConversionFactor(ingredientCode Code, dailyDose Decimal, dose
     else 0
   end
 
+/*define function ToCode(intRepresentation Integer):
+   System.Code {
+     code: convert intRepresentation to String,
+     system: RxNorm
+   }*/
+
+
 /*
-  Returns the non-surgical opioid ingredients and their strengths that 
+  Returns the non-surgical opioid ingredients and their strengths that
   make up the drug identified by the given rxNormCode as a list of tuples:
 
   List<Tuple {
@@ -211,7 +218,7 @@ define function GetIngredients(rxNormCode Code):
   ) C
     let ingredient: SingletonFrom([MED_INGREDIENT: INGREDIENT_RXCUI in C.ingredientCode])
     where exists (
-      [MED_INGREDIENT_TYPE: INGREDIENT_RXCUI in C.ingredientCode] IT 
+      [MED_INGREDIENT_TYPE: INGREDIENT_RXCUI in C.ingredientCode] IT
         where IT.INGREDIENT_TYPE = 'NonSurgicalOpioid'
     )
     return {
@@ -220,22 +227,22 @@ define function GetIngredients(rxNormCode Code):
       ingredientCode: C.ingredientCode,
       ingredientName: ingredient.INGREDIENT_NAME,
       strength: Quantity {
-        value: ToDecimal(C.component.STRENGTH),
+        value: C.component.STRENGTH_VALUE,
         unit: ToUCUM(C.component.STRENGTH_UNIT)
       }
     }
-    
+
 /*
   Calculates MMEs for the given input prescription information and returns it
   as a list of tuples:
 
-  List<Tuple { 
+  List<Tuple {
     rxNormCode Code,
     doseFormCode Code,
-    quantity Integer, 
-    daysSupply Integer, 
+    quantity Integer,
+    daysSupply Integer,
     ingredientCode Code,
-    ingredientName String, 
+    ingredientName String,
     strength Quantity,
     conversionFactor Decimal,
     mme Quantity
@@ -257,13 +264,12 @@ define function CalculateMMEs(medications List<Tuple { rxNormCode Code, quantity
             ingredientName: I.ingredientName,
             strength: I.strength,
             conversionFactor: factor,
-            mme: Quantity { 
-              value: I.strength.value * M.quantity / M.daysSupply * factor, 
+            mme: Quantity {
+              value: I.strength.value * M.quantity / M.daysSupply * factor,
               unit: I.strength.unit + '/d'
             }
           }
   )
-  
+
 define TestCalculateMMEs:
   CalculateMMEs({ { rxNormCode: Code '197696' from RxNorm, quantity: 30, daysSupply: 30 } })
-  

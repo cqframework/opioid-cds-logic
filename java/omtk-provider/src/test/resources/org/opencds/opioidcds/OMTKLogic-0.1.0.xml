@@ -527,10 +527,8 @@
                   <element name="strength">
                      <value classType="t:Quantity" xsi:type="Instance">
                         <element name="value">
-                           <value xsi:type="ToDecimal">
-                              <operand path="STRENGTH" xsi:type="Property">
-                                 <source path="component" scope="C" xsi:type="Property"/>
-                              </operand>
+                           <value path="STRENGTH_VALUE" xsi:type="Property">
+                              <source path="component" scope="C" xsi:type="Property"/>
                            </value>
                         </element>
                         <element name="unit">

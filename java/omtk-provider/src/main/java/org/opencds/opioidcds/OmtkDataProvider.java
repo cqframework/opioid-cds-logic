@@ -4,6 +4,7 @@ import org.opencds.cqf.cql.data.DataProvider;
 import org.opencds.cqf.cql.runtime.Code;
 import org.opencds.cqf.cql.runtime.Interval;
 
+import java.math.BigDecimal;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -88,7 +89,7 @@ public class OmtkDataProvider implements DataProvider {
                 throw new UnsupportedOperationException("OmtkDataProvider does not support filtering by date range.");
             }
 
-            java.sql.ResultSet rs = statement.executeQuery(String.format("SELECT * FROM %s", dataType));
+            java.sql.ResultSet rs = statement.executeQuery(select.toString());
             return new OmtkDataWrapper(rs);
         } catch (SQLException e) {
             throw new RuntimeException(e.getMessage(), e);
@@ -108,7 +109,7 @@ public class OmtkDataProvider implements DataProvider {
 
         if (target instanceof OmtkRow) {
             OmtkRow row = (OmtkRow)target;
-            return row.getValue(path);
+            return mapType(row.getValue(path));
         }
 
         throw new UnsupportedOperationException(String.format("Could not retrieve value of property %s from object of type %s.",
@@ -123,5 +124,17 @@ public class OmtkDataProvider implements DataProvider {
     @Override
     public void setValue(Object target, String path, Object value) {
         throw new UnsupportedOperationException("OmtkProvider does not support write.");
+    }
+
+    private Object mapType(Object type) {
+        if (type instanceof Double) {
+            return new BigDecimal((Double) type);
+        }
+
+        else if (type instanceof Integer) {
+            return new Code().withCode(type.toString()).withSystem("http://www.nlm.nih.gov/research/umls/rxnorm");
+        }
+
+        return type;
     }
 }
