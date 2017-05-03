@@ -2,6 +2,7 @@ package org.opencds.opioidcds;
 
 import org.opencds.cqf.cql.runtime.Code;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
