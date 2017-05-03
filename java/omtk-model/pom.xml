@@ -27,27 +27,27 @@
     <dependency>
       <groupId>info.cqframework</groupId>
       <artifactId>cql</artifactId>
-      <version>1.1.1-SNAPSHOT</version>
+      <version>1.1.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>info.cqframework</groupId>
       <artifactId>cql-to-elm</artifactId>
-      <version>1.1.1-SNAPSHOT</version>
+      <version>1.1.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>info.cqframework</groupId>
       <artifactId>elm</artifactId>
-      <version>1.1.1-SNAPSHOT</version>
+      <version>1.1.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>info.cqframework</groupId>
       <artifactId>quick</artifactId>
-      <version>1.1.1-SNAPSHOT</version>
+      <version>1.1.2-SNAPSHOT</version>
     </dependency>
     <dependency>
 		<groupId>info.cqframework</groupId>
 		<artifactId>qdm</artifactId>
-		<version>1.1.1-SNAPSHOT</version>
+		<version>1.1.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
