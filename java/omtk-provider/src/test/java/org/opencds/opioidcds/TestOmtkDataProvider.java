@@ -17,7 +17,7 @@ public class TestOmtkDataProvider {
 
     @Test
     public void testBasicAccess() {
-        OmtkDataProvider provider = new OmtkDataProvider("jdbc:ucanaccess://c:/Users/Bryn/Documents/Src/SS/Pilots/Opioid/src/java/omtk-provider/data/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider provider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
         Iterable<Object> result = provider.retrieve(null, null, "MED_INGREDIENT", null, null, null, null, null, null, null, null);
         for (Object row : result) {
             OmtkRow omtkRow = (OmtkRow)row;
@@ -33,7 +33,7 @@ public class TestOmtkDataProvider {
         java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("OMTKLogic-0.1.0.xml");
         org.cqframework.cql.elm.execution.Library library = CqlLibraryReader.read(input);
         Context context = new Context(library);
-        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://c:/Users/Bryn/Documents/Src/SS/Pilots/Opioid/src/java/omtk-provider/data/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
         Object result = context.resolveExpressionRef("TestCalculateMMEs").getExpression().evaluate(context);
         if (result == null) {
