@@ -1,14 +1,13 @@
 package org.opencds.opioidcds;
 
-import org.cqframework.cql.cql2elm.CqlTranslator;
-import org.cqframework.cql.cql2elm.CqlTranslatorException;
-import org.cqframework.cql.cql2elm.LibraryManager;
-import org.cqframework.cql.cql2elm.ModelInfoLoader;
+import org.cqframework.cql.cql2elm.*;
+import org.cqframework.cql.cql2elm.model.TranslatedLibrary;
 import org.cqframework.cql.elm.tracking.TrackBack;
 import org.hl7.elm.r1.VersionedIdentifier;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
 
@@ -25,6 +24,45 @@ public class TestTranslator {
         CqlTranslator translator = CqlTranslator.fromStream(test, new LibraryManager(), CqlTranslator.Options.EnableDetailedErrors);
         org.cqframework.cql.cql2elm.model.TranslatedLibrary library = translator.getTranslatedLibrary();
 
+        checkErrors(translator);
+        try (PrintWriter pw = new PrintWriter(Paths.get("OMTKLogic-0.1.0.xml").toFile(), "UTF-8")) {
+            pw.println(translator.toXml());
+        }
+    }
+
+    @Test
+    public void testOpioidCDSDSTU2() throws IOException {
+        OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
+        FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("1.0.2");
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("1.0.2"), fhirProvider);
+        LibraryManager libraryManager = new LibraryManager();
+        libraryManager.getLibrarySourceLoader().clearProviders();
+        libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
+        libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
+        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_DSTU2-0.1.0.cql");
+        CqlTranslator translator = CqlTranslator.fromStream(test, libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        TranslatedLibrary library = translator.getTranslatedLibrary();
+
+        checkErrors(translator);
+        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_DSTU2-0.1.0.xml").toFile(), "UTF-8")) {
+            pw.println(translator.toXml());
+        }
+    }
+
+    class TestLibrarySourceProvider implements LibrarySourceProvider {
+
+        @Override
+        public InputStream getLibrarySource(VersionedIdentifier libraryIdentifier) {
+            if (libraryIdentifier.getId().equals("OMTKLogic") && libraryIdentifier.getVersion().equals("0.1.0")) {
+                return TestTranslator.class.getResourceAsStream("OMTKLogic-0.1.0.cql");
+            }
+
+            return null;
+        }
+    }
+
+    private void checkErrors(CqlTranslator translator) {
         if (translator.getErrors().size() > 0) {
             System.err.println("Translation failed due to errors:");
             for (CqlTranslatorException error : translator.getErrors()) {
@@ -34,11 +72,6 @@ public class TestTranslator {
                 System.err.printf("%s %s%n", lines, error.getMessage());
             }
             throw new RuntimeException("Translation failed due to errors");
-        }
-        else {
-            try (PrintWriter pw = new PrintWriter(Paths.get("OMTKLogic-0.1.0.xml").toFile(), "UTF-8")) {
-                pw.println(translator.toXml());
-            }
         }
     }
 }

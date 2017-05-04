@@ -610,10 +610,8 @@
                      <value name="EnsureMicrogramQuantity" xsi:type="FunctionRef">
                         <operand classType="t:Quantity" xsi:type="Instance">
                            <element name="value">
-                              <value xsi:type="ToDecimal">
-                                 <operand path="STRENGTH" xsi:type="Property">
-                                    <source path="component" scope="C" xsi:type="Property"/>
-                                 </operand>
+                              <value path="STRENGTH_VALUE" xsi:type="Property">
+                                 <source path="component" scope="C" xsi:type="Property"/>
                               </value>
                            </element>
                            <element name="unit">
@@ -799,6 +797,18 @@
          </operand>
          <operand name="dosesPerDay">
             <operandTypeSpecifier name="t:Decimal" xsi:type="NamedTypeSpecifier"/>
+         </operand>
+      </def>
+      <def name="GetMedicationName" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
+         <expression path="DRUG_NAME" xsi:type="Property">
+            <source xsi:type="SingletonFrom">
+               <operand xmlns:ns8="http://org.opencds/opioid-cds" dataType="ns8:MED_DRUG" codeProperty="DRUG_RXCUI" xsi:type="Retrieve">
+                  <codes name="rxNormCode" xsi:type="OperandRef"/>
+               </operand>
+            </source>
+         </expression>
+         <operand name="rxNormCode">
+            <operandTypeSpecifier name="t:Code" xsi:type="NamedTypeSpecifier"/>
          </operand>
       </def>
       <def name="GetDailyDoseDescription" context="Patient" accessLevel="Public" xsi:type="FunctionDef">

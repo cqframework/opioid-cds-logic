@@ -10,6 +10,14 @@
     "patient": {
    		"reference": "/api/FHIR/DSTU2/Patient/pat_id_1"
   	},
+    "medicationCodeableConcept": {
+      "coding": [
+        {
+          "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+          "code": "245136"
+        }
+      ]
+    },
     "medicationReference": {
       "reference": "/api/FHIR/DSTU2/Medication/med_id_bup_patch"
     },
