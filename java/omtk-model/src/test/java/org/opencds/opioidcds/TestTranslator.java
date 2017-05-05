@@ -50,6 +50,25 @@ public class TestTranslator {
         }
     }
 
+    @Test
+    public void testOpioidCDSSTU3() throws IOException {
+        OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
+        FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("3.0.0"), fhirProvider);
+        LibraryManager libraryManager = new LibraryManager();
+        libraryManager.getLibrarySourceLoader().clearProviders();
+        libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
+        libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
+        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3-0.1.0.cql");
+        CqlTranslator translator = CqlTranslator.fromStream(test, libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        TranslatedLibrary library = translator.getTranslatedLibrary();
+
+        checkErrors(translator);
+        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3-0.1.0.xml").toFile(), "UTF-8")) {
+            pw.println(translator.toXml());
+        }
+    }
     class TestLibrarySourceProvider implements LibrarySourceProvider {
 
         @Override

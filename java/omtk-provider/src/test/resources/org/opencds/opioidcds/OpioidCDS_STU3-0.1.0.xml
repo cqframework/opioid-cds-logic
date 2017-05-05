@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <library xmlns="urn:hl7-org:elm:r1" xmlns:t="urn:hl7-org:elm-types:r1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fhir="http://hl7.org/fhir" xmlns:a="urn:hl7-org:cql-annotations:r1">
-   <identifier id="OpioidCDS_DSTU2" version="0.1.0"/>
+   <identifier id="OpioidCDS_STU3" version="0.1.0"/>
    <schemaIdentifier id="urn:hl7-org:elm" version="r1"/>
    <usings>
       <def localIdentifier="System" uri="urn:hl7-org:elm-types:r1"/>
-      <def localIdentifier="FHIR" uri="http://hl7.org/fhir" version="1.0.2"/>
+      <def localIdentifier="FHIR" uri="http://hl7.org/fhir" version="3.0.0"/>
    </usings>
    <includes>
-      <def localIdentifier="FHIRHelpers" path="FHIRHelpers" version="1.0.2"/>
+      <def localIdentifier="FHIRHelpers" path="FHIRHelpers" version="3.0.0"/>
       <def localIdentifier="OMTKLogic" path="OMTKLogic" version="0.1.0"/>
    </includes>
    <parameters>
@@ -16,7 +16,7 @@
       </def>
       <def name="Orders" accessLevel="Public">
          <parameterTypeSpecifier xsi:type="ListTypeSpecifier">
-            <elementType name="fhir:MedicationOrder" xsi:type="NamedTypeSpecifier"/>
+            <elementType name="fhir:MedicationRequest" xsi:type="NamedTypeSpecifier"/>
          </parameterTypeSpecifier>
       </def>
    </parameters>
@@ -86,7 +86,7 @@
                   </element>
                   <element name="unit">
                      <value name="ToString" libraryName="FHIRHelpers" xsi:type="FunctionRef">
-                        <operand path="periodUnits" xsi:type="Property">
+                        <operand path="periodUnit" xsi:type="Property">
                            <source name="repeat" xsi:type="QueryLetRef"/>
                         </operand>
                      </value>
