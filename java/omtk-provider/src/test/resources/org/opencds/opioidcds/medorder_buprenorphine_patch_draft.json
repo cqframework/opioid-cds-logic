@@ -18,9 +18,6 @@
         }
       ]
     },
-    "medicationReference": {
-      "reference": "/api/FHIR/DSTU2/Medication/med_id_bup_patch"
-    },
     "dosageInstruction": [
       {
         "text": "1 patch Transdermal Every 72 hours",
