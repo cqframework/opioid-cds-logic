@@ -126,6 +126,10 @@ public class OmtkDataProvider implements DataProvider {
         throw new UnsupportedOperationException("OmtkProvider does not support write.");
     }
 
+    public Object createInstance(String typeName) {
+        throw new UnsupportedOperationException("OmtkProvider does not support write.");
+    }
+
     @Override
     public void setValue(Object target, String path, Object value) {
         throw new UnsupportedOperationException("OmtkProvider does not support write.");
