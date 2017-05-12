@@ -26,7 +26,7 @@ public class TestOmtkDataProvider {
 
     @Test
     public void testBasicAccess() {
-        OmtkDataProvider provider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Bryn/Documents/Src/SS/Pilots/Opioid/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider provider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
         Iterable<Object> result = provider.retrieve(null, null, "MED_INGREDIENT", null, null, null, null, null, null, null, null);
         for (Object row : result) {
             OmtkRow omtkRow = (OmtkRow)row;
@@ -42,7 +42,7 @@ public class TestOmtkDataProvider {
         java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("OMTKLogic-0.1.0.xml");
         org.cqframework.cql.elm.execution.Library library = CqlLibraryReader.read(input);
         Context context = new Context(library);
-        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Bryn/Documents/Src/SS/Pilots/Opioid/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
         Object result = context.resolveExpressionRef("TestCalculateMMEs").getExpression().evaluate(context);
         if (result == null) {
@@ -55,11 +55,14 @@ public class TestOmtkDataProvider {
         Library library = CqlLibraryReader.read(input);
         Context context = new Context(library);
         context.registerLibraryLoader(new TestLibraryLoader());
-        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://c:/Users/Bryn/Documents/Src/SS/Pilots/Opioid/src/java/omtk-provider/data/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
-        // TODO: PackageName should be part of the FhirDataProviderDstu2(), shouldn't have to set it here...
         FhirDataProviderDstu2 fhirDataProvider = new FhirDataProviderDstu2().withPackageName("ca.uhn.fhir.model.dstu2.resource");
         context.registerDataProvider("http://hl7.org/fhir", fhirDataProvider);
+        FhirDataProviderDstu2 primitivefhirDataProvider = new FhirDataProviderDstu2().withPackageName("ca.uhn.fhir.model.primitive");
+        context.registerDataProvider("http://hl7.org/fhir", primitivefhirDataProvider);
+        FhirDataProviderDstu2 compositefhirDataProvider = new FhirDataProviderDstu2().withPackageName("ca.uhn.fhir.model.dstu2.composite");
+        context.registerDataProvider("http://hl7.org/fhir", compositefhirDataProvider);
         return context;
     }
 
@@ -68,10 +71,11 @@ public class TestOmtkDataProvider {
         Library library = CqlLibraryReader.read(input);
         Context context = new Context(library);
         context.registerLibraryLoader(new TestLibraryLoader());
-        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://c:/Users/Bryn/Documents/Src/SS/Pilots/Opioid/src/java/omtk-provider/data/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
         FhirDataProvider fhirDataProvider = new FhirDataProvider();
         context.registerDataProvider("http://hl7.org/fhir", fhirDataProvider);
+        context.setExpressionCaching(true);
         return context;
     }
 
@@ -163,6 +167,16 @@ public class TestOmtkDataProvider {
             }
             else if (versionedIdentifier.getId().equals("FHIRHelpers") && versionedIdentifier.getVersion().equals("3.0.0")) {
                 java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("FHIRHelpers-3.0.0.xml");
+                try {
+                    return CqlLibraryReader.read(input);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JAXBException e) {
+                    e.printStackTrace();
+                }
+            }
+            else if (versionedIdentifier.getId().equals("FHIRHelpers") && versionedIdentifier.getVersion().equals("1.0.2")) {
+                java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("FHIRHelpers-1.0.2.xml");
                 try {
                     return CqlLibraryReader.read(input);
                 } catch (IOException e) {

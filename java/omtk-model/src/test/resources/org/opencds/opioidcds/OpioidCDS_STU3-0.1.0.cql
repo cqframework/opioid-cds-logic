@@ -26,7 +26,7 @@ define Prescriptions:
       medicationName: OMTKLogic.GetMedicationName(rxNormCode),
       dosageInstruction: O.dosageInstruction[0], // NOTE: Assuming a single dosage instruction element
       repeat: dosageInstruction.timing.repeat,
-      frequency: Coalesce(repeat.frequencyMax, repeat.frequency),
+      frequency: Coalesce(repeat.frequencyMax.value, repeat.frequency.value),
       period: System.Quantity { value: repeat.period, unit: repeat.periodUnit },
       doseDescription: 
         Coalesce(
