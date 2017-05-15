@@ -27,18 +27,18 @@
     <dependency>
       <groupId>org.opencds.cqf</groupId>
       <artifactId>cql-engine</artifactId>
-      <version>1.2.12-SNAPSHOT</version>
+      <version>1.2.13-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.opencds.cqf</groupId>
       <artifactId>cql-engine-fhir</artifactId>
-      <version>1.2.12-SNAPSHOT</version>
+      <version>1.2.13-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>net.sf.ucanaccess</groupId>
-      <artifactId>ucanaccess</artifactId>
-      <version>4.0.1</version>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>3.15.1</version>
     </dependency>
     <!-- This dependency includes the core HAPI-FHIR classes -->
     <dependency>

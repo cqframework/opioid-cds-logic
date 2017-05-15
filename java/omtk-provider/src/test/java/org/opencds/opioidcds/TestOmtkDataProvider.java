@@ -16,6 +16,7 @@ import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,9 +25,11 @@ import java.util.List;
  */
 public class TestOmtkDataProvider {
 
+    private String pathToDB = Paths.get("src/test/resources/org/opencds/opioidcds/OpioidManagementTerminologyKnowledge.db").toAbsolutePath().toString();
+
     @Test
     public void testBasicAccess() {
-        OmtkDataProvider provider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider provider = new OmtkDataProvider("jdbc:sqlite://" + pathToDB);
         Iterable<Object> result = provider.retrieve(null, null, "MED_INGREDIENT", null, null, null, null, null, null, null, null);
         for (Object row : result) {
             OmtkRow omtkRow = (OmtkRow)row;
@@ -42,7 +45,7 @@ public class TestOmtkDataProvider {
         java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("OMTKLogic-0.1.0.xml");
         org.cqframework.cql.elm.execution.Library library = CqlLibraryReader.read(input);
         Context context = new Context(library);
-        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:sqlite://" + pathToDB);
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
         Object result = context.resolveExpressionRef("TestCalculateMMEs").getExpression().evaluate(context);
         if (result == null) {
@@ -55,7 +58,7 @@ public class TestOmtkDataProvider {
         Library library = CqlLibraryReader.read(input);
         Context context = new Context(library);
         context.registerLibraryLoader(new TestLibraryLoader());
-        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:sqlite://" + pathToDB);
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
         FhirDataProviderDstu2 fhirDataProvider = new FhirDataProviderDstu2().withPackageName("ca.uhn.fhir.model.dstu2.resource");
         context.registerDataProvider("http://hl7.org/fhir", fhirDataProvider);
@@ -71,7 +74,7 @@ public class TestOmtkDataProvider {
         Library library = CqlLibraryReader.read(input);
         Context context = new Context(library);
         context.registerLibraryLoader(new TestLibraryLoader());
-        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:ucanaccess://C:/Users/Christopher/Desktop/NewRepos/CDC_Opiod/OpioidManagementTerminologyKnowledge.accdb;memory=false;keepMirror=true");
+        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:sqlite://" + pathToDB);
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
         FhirDataProvider fhirDataProvider = new FhirDataProvider();
         context.registerDataProvider("http://hl7.org/fhir", fhirDataProvider);
