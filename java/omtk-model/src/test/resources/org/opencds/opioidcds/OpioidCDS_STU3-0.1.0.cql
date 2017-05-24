@@ -21,17 +21,17 @@ define HasMetastaticCancer: false
 // Prescriptions: rxNormCode, isDraft, isPRN, prescription String, dose Quantity, dosesPerDay Decimal
 define Prescriptions:
   Orders O
-    let 
+    let
       rxNormCode: FHIRHelpers.ToCode(O.medicationCodeableConcept.coding[0]), // NOTE: Assuming medication is specified as a CodeableConcept with a single RxNorm code
       medicationName: OMTKLogic.GetMedicationName(rxNormCode),
       dosageInstruction: O.dosageInstruction[0], // NOTE: Assuming a single dosage instruction element
       repeat: dosageInstruction.timing.repeat,
       frequency: Coalesce(repeat.frequencyMax.value, repeat.frequency.value),
       period: System.Quantity { value: repeat.period, unit: repeat.periodUnit },
-      doseDescription: 
+      doseDescription:
         Coalesce(
           ToString(FHIRHelpers.ToQuantity(dosageInstruction.doseQuantity)), // There should be a conversion from FHIR.SimpleQuantity to System.Quantity
-          ToString(dosageInstruction.doseRange.low.value) 
+          ToString(dosageInstruction.doseRange.low.value)
             + '-' + ToString(dosageInstruction.doseRange.high.value)
             + dosageInstruction.doseRange.high.unit
         ),
@@ -45,7 +45,7 @@ define Prescriptions:
       rxNormCode: rxNormCode,
       isDraft: O.status = 'draft',
       isPRN: dosageInstruction.asNeededBoolean, // NOTE: Assuming asNeeded is expressed as a boolean
-      prescription: 
+      prescription:
         if dosageInstruction.text is not null then
           medicationName + ' ' + dosageInstruction.text
         else
@@ -53,7 +53,7 @@ define Prescriptions:
       dose: FHIRHelpers.ToQuantity(Coalesce(dosageInstruction.doseQuantity, dosageInstruction.doseRange.high)), // TODO: Shouldn't need the ToQuantity here...
       dosesPerDay: Coalesce(OMTKLogic.ToDaily(frequency, period), 1.0)
     }
-    
+
 // MME - Milligram Morphine Equivalents as a list of tuples:
 // List<Tuple { rxNormCode: Code, isDraft Boolean, isPRN Boolean, prescription String, dailyDose String, conversionFactor Decimal, mme System.Quantity }>
 // function CalculateMMEs(medications List<Tuple { rxNormCode Code, doseQuantity System.Quantity, dosesPerDay Decimal }>):
@@ -67,15 +67,33 @@ define MME:
       prescription: P.prescription,
       dailyDose: mme.dailyDoseDescription,
       conversionFactor: mme.conversionFactor,
-      mme: mme.mme 
+      mme: mme.mme
     }
     sort by if isDraft then 0 else 1, rxNormCode.code
-  
+
 // TODO: Capture process decisions for MME calculation
 // TotalMME - Sum of all MME for currently and about-to-be prescribed opioid medications
 define TotalMME: System.Quantity { value: Sum(MME M return M.mme.value), unit: 'mg/d' }
 
 define IsMME50OrMore: TotalMME >= 50 'mg/d'
+
+define Results:
+  IsMME50OrMore M
+  return {
+    mmeOver50: M,
+    title:
+      if M
+      then 'High risk for opioid overdose - '
+            + case when TotalMME.value >= 90
+                then 'taper now'
+                else 'consider tapering'
+              end
+      else 'MME is within the recommended range.',
+      description:
+        if M
+        then 'Total morphine milligram equivalent (MME) is ' + ToString(TotalMME) + '. Taper to less than 50.'
+        else 'Total morphine milligram equivalent (MME) is ' + ToString(TotalMME) + '. This falls within the accepted range.'
+  }
 
 /*
 USCore profiles only support MedicationRequest and MedicationStatement, same as Argonaut Data Query
@@ -85,4 +103,3 @@ USCore's Medication Code is bound to:
 http://www.hl7.org/fhir/us/core/ValueSet-us-core-medication-codes.html
 The USCore MedicationRequest and MedicationStatement profiles do not require any dosage or frequency information
 */
-
