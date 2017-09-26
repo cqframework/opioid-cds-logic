@@ -21,7 +21,7 @@ public class TestTranslator {
         OmtkModelInfoProvider provider = new OmtkModelInfoProvider().withVersion("0.1.0");
         ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), provider);
         java.io.InputStream test = TestTranslator.class.getResourceAsStream("OMTKLogic-0.1.0.cql");
-        CqlTranslator translator = CqlTranslator.fromStream(test, new LibraryManager(), CqlTranslator.Options.EnableDetailedErrors);
+        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), new LibraryManager(new ModelManager()), CqlTranslator.Options.EnableDetailedErrors);
         org.cqframework.cql.cql2elm.model.TranslatedLibrary library = translator.getTranslatedLibrary();
 
         checkErrors(translator);
@@ -36,12 +36,12 @@ public class TestTranslator {
         FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("1.0.2");
         ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
         ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("1.0.2"), fhirProvider);
-        LibraryManager libraryManager = new LibraryManager();
+        LibraryManager libraryManager = new LibraryManager(new ModelManager());
         libraryManager.getLibrarySourceLoader().clearProviders();
         libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
         libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
         InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_DSTU2-0.1.0.cql");
-        CqlTranslator translator = CqlTranslator.fromStream(test, libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
         TranslatedLibrary library = translator.getTranslatedLibrary();
 
         checkErrors(translator);
@@ -56,12 +56,12 @@ public class TestTranslator {
         FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
         ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
         ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("3.0.0"), fhirProvider);
-        LibraryManager libraryManager = new LibraryManager();
+        LibraryManager libraryManager = new LibraryManager(new ModelManager());
         libraryManager.getLibrarySourceLoader().clearProviders();
         libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
         libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
         InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3-0.1.0.cql");
-        CqlTranslator translator = CqlTranslator.fromStream(test, libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
         TranslatedLibrary library = translator.getTranslatedLibrary();
 
         checkErrors(translator);

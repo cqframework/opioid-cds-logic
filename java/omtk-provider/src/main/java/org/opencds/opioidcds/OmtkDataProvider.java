@@ -102,6 +102,11 @@ public class OmtkDataProvider implements DataProvider {
     }
 
     @Override
+    public void setPackageName(String s) {
+        // nothing
+    }
+
+    @Override
     public Object resolvePath(Object target, String path) {
         if (target == null) {
             return null;

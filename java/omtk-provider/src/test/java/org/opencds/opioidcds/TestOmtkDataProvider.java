@@ -6,8 +6,8 @@ import org.cqframework.cql.elm.execution.Library;
 import org.cqframework.cql.elm.execution.VersionedIdentifier;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
 import org.junit.Test;
-import org.opencds.cqf.cql.data.fhir.FhirDataProvider;
 import org.opencds.cqf.cql.data.fhir.FhirDataProviderDstu2;
+import org.opencds.cqf.cql.data.fhir.FhirDataProviderStu3;
 import org.opencds.cqf.cql.execution.Context;
 import org.opencds.cqf.cql.execution.CqlLibraryReader;
 import org.opencds.cqf.cql.execution.LibraryLoader;
@@ -60,11 +60,14 @@ public class TestOmtkDataProvider {
         context.registerLibraryLoader(new TestLibraryLoader());
         OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:sqlite://" + pathToDB);
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
-        FhirDataProviderDstu2 fhirDataProvider = new FhirDataProviderDstu2().withPackageName("ca.uhn.fhir.model.dstu2.resource");
+        FhirDataProviderDstu2 fhirDataProvider = new FhirDataProviderDstu2();
+        fhirDataProvider.setPackageName("ca.uhn.fhir.model.dstu2.resource");
         context.registerDataProvider("http://hl7.org/fhir", fhirDataProvider);
-        FhirDataProviderDstu2 primitivefhirDataProvider = new FhirDataProviderDstu2().withPackageName("ca.uhn.fhir.model.primitive");
+        FhirDataProviderDstu2 primitivefhirDataProvider = new FhirDataProviderDstu2();
+        primitivefhirDataProvider.setPackageName("ca.uhn.fhir.model.primitive");
         context.registerDataProvider("http://hl7.org/fhir", primitivefhirDataProvider);
-        FhirDataProviderDstu2 compositefhirDataProvider = new FhirDataProviderDstu2().withPackageName("ca.uhn.fhir.model.dstu2.composite");
+        FhirDataProviderDstu2 compositefhirDataProvider = new FhirDataProviderDstu2();
+        compositefhirDataProvider.setPackageName("ca.uhn.fhir.model.dstu2.composite");
         context.registerDataProvider("http://hl7.org/fhir", compositefhirDataProvider);
         return context;
     }
@@ -76,7 +79,7 @@ public class TestOmtkDataProvider {
         context.registerLibraryLoader(new TestLibraryLoader());
         OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:sqlite://" + pathToDB);
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
-        FhirDataProvider fhirDataProvider = new FhirDataProvider();
+        FhirDataProviderStu3 fhirDataProvider = new FhirDataProviderStu3();
         context.registerDataProvider("http://hl7.org/fhir", fhirDataProvider);
         context.setExpressionCaching(true);
         return context;
