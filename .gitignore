@@ -13,5 +13,6 @@ hs_err_pid*
 .idea
 *.iml
 /java/omtk-provider/data
-
+/java/omtk-provider/target
+/java/omtk-model/target
 .DS_STORE
