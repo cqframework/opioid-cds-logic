@@ -1,4 +1,4 @@
-package org.opencds.opioidcds;
+package org.opencds.cqf.opioidcds;
 
 import org.cqframework.cql.cql2elm.ModelInfoProvider;
 import org.hl7.elm_modelinfo.r1.ModelInfo;
@@ -22,7 +22,7 @@ public class OmtkModelInfoProvider implements ModelInfoProvider {
         String localVersion = version == null ? "" : version;
         switch (localVersion) {
             case "0.1.0":
-                return JAXB.unmarshal(OmtkModelInfoProvider.class.getResourceAsStream("/org/opencds/opioidcds/OMTK-modelinfo-0.1.0.xml"),
+                return JAXB.unmarshal(OmtkModelInfoProvider.class.getResourceAsStream("/org/opencds/cqf/opioidcds/OMTK-modelinfo-0.1.0.xml"),
                         ModelInfo.class);
             default:
                 throw new IllegalArgumentException(String.format("Unknown version %s of the OMTK model.", localVersion));

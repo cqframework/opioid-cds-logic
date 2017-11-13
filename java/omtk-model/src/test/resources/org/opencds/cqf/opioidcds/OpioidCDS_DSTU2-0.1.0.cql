@@ -32,18 +32,14 @@ define function ToQuantity(quantity FHIR.Quantity):
 define Prescriptions:
   Orders O
     let
-      rxNormCode: ToCode(O.medication.coding[0]), // NOTE: Assuming medication is specified as a CodeableConcept with a single RxNorm code
+      rxNormCode: ToCode(O.medicationCodeableConcept.coding[0]), // NOTE: Assuming medication is specified as a CodeableConcept with a single RxNorm code
       medicationName: OMTKLogic.GetMedicationName(rxNormCode),
       dosageInstruction: O.dosageInstruction[0], // NOTE: Assuming a single dosage instruction element
       repeat: dosageInstruction.timing.repeat,
       frequency: Coalesce(repeat.frequencyMax.value, repeat.frequency.value),
       period: System.Quantity { value: repeat.period.value, unit: repeat.periodUnits.value },
       doseDescription:
-        if dosageInstruction.dose is FHIR.Range
-            then ToString(ToQuantity(dosageInstruction.dose.low))
-                             + '-' + ToString(ToQuantity(dosageInstruction.dose.high))
-                             + dosageInstruction.dose.high.unit.value
-            else ToString(ToQuantity(dosageInstruction.dose as SimpleQuantity)) // There should be a conversion from FHIR.SimpleQuantity to System.Quantity
+        ToString(ToQuantity(dosageInstruction.doseQuantity as SimpleQuantity)) // There should be a conversion from FHIR.SimpleQuantity to System.Quantity
       ,
       frequencyDescription:
         ToString(dosageInstruction.timing.repeat.frequency.value) +
@@ -54,17 +50,13 @@ define Prescriptions:
     return {
       rxNormCode: rxNormCode,
       isDraft: O.status.value = 'draft',
-      isPRN: dosageInstruction.asNeeded, // NOTE: Assuming asNeeded is expressed as a boolean
+      isPRN: dosageInstruction.asNeededBoolean, // NOTE: Assuming asNeeded is expressed as a boolean
       prescription:
         if dosageInstruction.text is not null then
           medicationName + ' ' + dosageInstruction.text.value
         else
-          medicationName + ' ' + doseDescription + ' q' + frequencyDescription + (if dosageInstruction.asNeeded.value then ' PRN' else ''), // TODO: Shouldn't need the .value here on asNeededBoolean
-      dose: ToQuantity(
-                if dosageInstruction.dose is FHIR.Range
-                    then dosageInstruction.dose.high
-                    else dosageInstruction.dose
-            ), // TODO: Shouldn't need the ToQuantity here...
+          medicationName + ' ' + doseDescription + ' q' + frequencyDescription + (if dosageInstruction.asNeededBoolean.value then ' PRN' else ''), // TODO: Shouldn't need the .value here on asNeededBoolean
+      dose: ToQuantity(dosageInstruction.doseQuantity), // TODO: Shouldn't need the ToQuantity here...
       dosesPerDay: Coalesce(OMTKLogic.ToDaily(frequency, period), 1.0)
     }
 

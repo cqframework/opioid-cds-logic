@@ -1,4 +1,4 @@
-package org.opencds.opioidcds;
+package org.opencds.cqf.opioidcds;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class TestOmtkDataProvider {
 
-    private String pathToDB = Paths.get("src/test/resources/org/opencds/opioidcds/OpioidManagementTerminologyKnowledge.db").toAbsolutePath().toString();
+    private String pathToDB = Paths.get("src/test/resources/org/opencds/cqf/opioidcds/OpioidManagementTerminologyKnowledge.db").toAbsolutePath().toString();
 
     @Test
     public void testBasicAccess() {

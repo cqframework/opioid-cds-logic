@@ -1,4 +1,4 @@
-package org.opencds.opioidcds;
+package org.opencds.cqf.opioidcds;
 
 import java.util.HashMap;
 import java.util.Map;

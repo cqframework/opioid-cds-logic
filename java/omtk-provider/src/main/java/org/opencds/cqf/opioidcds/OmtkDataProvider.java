@@ -1,4 +1,4 @@
-package org.opencds.opioidcds;
+package org.opencds.cqf.opioidcds;
 
 import org.opencds.cqf.cql.data.DataProvider;
 import org.opencds.cqf.cql.runtime.Code;
@@ -98,7 +98,7 @@ public class OmtkDataProvider implements DataProvider {
 
     @Override
     public String getPackageName() {
-        return "org.opencds.opioidcds";
+        return "org.opencds.cqf.opioidcds";
     }
 
     @Override

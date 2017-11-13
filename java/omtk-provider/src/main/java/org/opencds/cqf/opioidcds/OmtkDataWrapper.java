@@ -1,14 +1,11 @@
-package org.opencds.opioidcds;
+package org.opencds.cqf.opioidcds;
 
 import org.opencds.cqf.cql.runtime.Code;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.jar.Pack200;
 
 /**
  * Created by Bryn on 4/24/2017.

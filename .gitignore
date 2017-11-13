@@ -15,4 +15,4 @@ hs_err_pid*
 /java/omtk-provider/data
 /java/omtk-provider/target
 /java/omtk-model/target
-.DS_STORE
+.DS_Store
