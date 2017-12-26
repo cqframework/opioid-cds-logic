@@ -271,7 +271,7 @@ define function GetDailyDose(ingredientCode Code, strength Quantity, doseFormCod
     when IsPatch(doseFormCode) then
       // buprenorphine or fentanyl patch
       if ToInteger(ingredientCode.code) in { 1819, 4337 } then
-        Quantity { value: doseQuantity.value * strength.value, unit: strength.unit }
+        Quantity { value: dosesPerDay * doseQuantity.value * strength.value, unit: strength.unit }
       else
         null
 

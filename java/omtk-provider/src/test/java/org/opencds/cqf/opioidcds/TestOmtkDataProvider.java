@@ -95,7 +95,7 @@ public class TestOmtkDataProvider {
     }
 
     private FhirContext dstu2Context;
-    public FhirContext getDstu2Context() {
+    private FhirContext getDstu2Context() {
         if (dstu2Context == null) {
             dstu2Context = FhirContext.forDstu2();
         }
@@ -103,7 +103,7 @@ public class TestOmtkDataProvider {
     }
 
     private FhirContext stu3Context;
-    public FhirContext getStu3Context() {
+    private FhirContext getStu3Context() {
         if (stu3Context == null) {
             stu3Context = FhirContext.forDstu3();
         }
@@ -111,7 +111,7 @@ public class TestOmtkDataProvider {
     }
 
     private List<MedicationOrder> loadDstu2MedOrders() {
-        ArrayList<MedicationOrder> orders = new ArrayList<MedicationOrder>();
+        ArrayList<MedicationOrder> orders = new ArrayList<>();
         ca.uhn.fhir.parser.IParser parser = getDstu2Context().newJsonParser();
         java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("medorder_buprenorphine_patch_draft.json");
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
@@ -124,9 +124,9 @@ public class TestOmtkDataProvider {
     }
 
     private List<MedicationRequest> loadStu3MedOrders() {
-        ArrayList<MedicationRequest> orders = new ArrayList<MedicationRequest>();
+        ArrayList<MedicationRequest> orders = new ArrayList<>();
         ca.uhn.fhir.parser.IParser parser = getStu3Context().newJsonParser();
-        java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("medrequest_buprenorphine_patch_draft.json");
+        java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("medreq_fentanyl_patch.json");
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
             MedicationRequest order = parser.parseResource(MedicationRequest.class, reader);
             orders.add(order);
@@ -165,9 +165,7 @@ public class TestOmtkDataProvider {
                 java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("OMTKLogic-0.1.0.xml");
                 try {
                     return CqlLibraryReader.read(input);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JAXBException e) {
+                } catch (IOException | JAXBException e) {
                     e.printStackTrace();
                 }
             }
@@ -175,9 +173,7 @@ public class TestOmtkDataProvider {
                 java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("FHIRHelpers-3.0.0.xml");
                 try {
                     return CqlLibraryReader.read(input);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JAXBException e) {
+                } catch (IOException | JAXBException e) {
                     e.printStackTrace();
                 }
             }
@@ -185,9 +181,7 @@ public class TestOmtkDataProvider {
                 java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("FHIRHelpers-1.0.2.xml");
                 try {
                     return CqlLibraryReader.read(input);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JAXBException e) {
+                } catch (IOException | JAXBException e) {
                     e.printStackTrace();
                 }
             }

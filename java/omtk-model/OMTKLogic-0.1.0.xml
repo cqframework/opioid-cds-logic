@@ -833,8 +833,11 @@
                   <then classType="t:Quantity" xsi:type="Instance">
                      <element name="value">
                         <value xsi:type="Multiply">
-                           <operand path="value" xsi:type="Property">
-                              <source name="doseQuantity" xsi:type="OperandRef"/>
+                           <operand xsi:type="Multiply">
+                              <operand name="dosesPerDay" xsi:type="OperandRef"/>
+                              <operand path="value" xsi:type="Property">
+                                 <source name="doseQuantity" xsi:type="OperandRef"/>
+                              </operand>
                            </operand>
                            <operand path="value" xsi:type="Property">
                               <source name="strength" xsi:type="OperandRef"/>

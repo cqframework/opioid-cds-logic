@@ -14,5 +14,6 @@ hs_err_pid*
 *.iml
 /java/omtk-provider/data
 /java/omtk-provider/target
+/java/omtk-provider/src/test/resources/org/opencds/cqf/opioidcds/OpioidManagementTerminologyKnowledge.db
 /java/omtk-model/target
-.DS_Store
+**/.DS_Store
