@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class TestOmtkDataProvider {
 
-    private String pathToDB = Paths.get("src/test/resources/org/opencds/cqf/opioidcds/OpioidManagementTerminologyKnowledge.db").toAbsolutePath().toString();
+    private String pathToDB = Paths.get("src/test/resources/org/opencds/cqf/opioidcds/LocalDataStore_RxNav_OpioidCds.db").toAbsolutePath().toString();
 
     @Test
     public void testBasicAccess() {
@@ -33,9 +33,9 @@ public class TestOmtkDataProvider {
         Iterable<Object> result = provider.retrieve(null, null, "MED_INGREDIENT", null, null, null, null, null, null, null, null);
         for (Object row : result) {
             OmtkRow omtkRow = (OmtkRow)row;
-            String rowString = String.format("INGREDIENT_RXCUI: %s, INGREDIENT_NAME: %s, MANUALLY_ENTERED: %s, UPDATE_DTM: %s",
+            String rowString = String.format("INGREDIENT_RXCUI: %s, INGREDIENT_NAME: %s, USE_TO_POPULATE_DB: %s, SKIP: %s, UPDATE_DTM: %s",
                     omtkRow.getValue("INGREDIENT_RXCUI"), omtkRow.getValue("INGREDIENT_NAME"),
-                    omtkRow.getValue("MANUALLY_ENTERED"), omtkRow.getValue("UPDATE_DTM"));
+                    omtkRow.getValue("USE_TO_POPULATE_DB"), omtkRow.getValue("SKIP"), omtkRow.getValue("UPDATE_DTM"));
             System.out.println(rowString);
         }
     }
@@ -149,6 +149,16 @@ public class TestOmtkDataProvider {
 
     @Test
     public void testCdsOpioidStu3LogicWithContext() throws IOException, JAXBException {
+        Context context = setupStu3();
+        context.setParameter(null, "Orders", loadStu3MedOrders());
+        Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);
+        if (result == null) {
+            throw new RuntimeException("Test failed");
+        }
+    }
+
+    @Test
+    public void testCdsOpioidStu3v18LogicWithContext() throws IOException, JAXBException {
         Context context = setupStu3();
         context.setParameter(null, "Orders", loadStu3MedOrders());
         Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);

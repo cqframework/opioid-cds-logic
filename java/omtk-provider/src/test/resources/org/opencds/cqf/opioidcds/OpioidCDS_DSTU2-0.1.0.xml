@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<library xmlns="urn:hl7-org:elm:r1" xmlns:t="urn:hl7-org:elm-types:r1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fhir="http://hl7.org/fhir" xmlns:a="urn:hl7-org:cql-annotations:r1">
+<library xmlns="urn:hl7-org:elm:r1" xmlns:t="urn:hl7-org:elm-types:r1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:fhir="http://hl7.org/fhir" xmlns:qdm43="urn:healthit-gov:qdm:v4_3" xmlns:qdm53="urn:healthit-gov:qdm:v5_3" xmlns:a="urn:hl7-org:cql-annotations:r1">
    <identifier id="OpioidCDS_DSTU2" version="0.1.0"/>
    <schemaIdentifier id="urn:hl7-org:elm" version="r1"/>
    <usings>
@@ -224,7 +224,6 @@
                                  </operand>
                               </operand>
                            </operand>
-                           <asTypeSpecifier name="t:Boolean" xsi:type="NamedTypeSpecifier"/>
                         </condition>
                         <then xsi:type="Concatenate">
                            <operand xsi:type="Concatenate">
@@ -258,7 +257,6 @@
                                        <source name="dosageInstruction" xsi:type="QueryLetRef"/>
                                     </source>
                                  </operand>
-                                 <asTypeSpecifier name="t:Boolean" xsi:type="NamedTypeSpecifier"/>
                               </condition>
                               <then valueType="t:String" value=" PRN" xsi:type="Literal"/>
                               <else valueType="t:String" value="" xsi:type="Literal"/>
@@ -346,7 +344,6 @@
                   <expression xsi:type="If">
                      <condition asType="t:Boolean" xsi:type="As">
                         <operand name="isDraft" xsi:type="IdentifierRef"/>
-                        <asTypeSpecifier name="t:Boolean" xsi:type="NamedTypeSpecifier"/>
                      </condition>
                      <then valueType="t:Integer" value="0" xsi:type="Literal"/>
                      <else valueType="t:Integer" value="1" xsi:type="Literal"/>
@@ -387,7 +384,6 @@
                <operand xsi:type="IsNull">
                   <operand name="Orders" xsi:type="ParameterRef"/>
                </operand>
-               <asTypeSpecifier name="t:Boolean" xsi:type="NamedTypeSpecifier"/>
             </condition>
             <then valueType="t:Boolean" value="false" xsi:type="Literal"/>
             <else xsi:type="GreaterOrEqual">
