@@ -4,21 +4,28 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.dstu2.resource.MedicationOrder;
 import org.cqframework.cql.elm.execution.Library;
 import org.cqframework.cql.elm.execution.VersionedIdentifier;
+import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
+import org.hl7.fhir.dstu3.model.Observation;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.junit.Test;
+import org.opencds.cqf.cql.data.fhir.BaseFhirDataProvider;
 import org.opencds.cqf.cql.data.fhir.FhirDataProviderDstu2;
 import org.opencds.cqf.cql.data.fhir.FhirDataProviderStu3;
 import org.opencds.cqf.cql.execution.Context;
 import org.opencds.cqf.cql.execution.CqlLibraryReader;
 import org.opencds.cqf.cql.execution.LibraryLoader;
+import org.opencds.cqf.cql.terminology.fhir.FhirTerminologyProvider;
 
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created by Bryn on 4/24/2017.
@@ -72,6 +79,14 @@ public class TestOmtkDataProvider {
         return context;
     }
 
+    private void loadTerminology(BaseFhirDataProvider fhirDataProvider) {
+        InputStream is = TestOmtkDataProvider.class.getResourceAsStream("cdc-opioid-guidance-opioid-screening-valueset.json");
+        Scanner scanner = new Scanner(is).useDelimiter("\\A");
+        String json = scanner.hasNext() ? scanner.next() : "";
+        IBaseResource resource = FhirContext.forDstu3().newJsonParser().parseResource(json);
+        fhirDataProvider.getFhirClient().transaction().withBundle((Bundle) resource).execute();
+    }
+
     private Context setupStu3() throws IOException, JAXBException {
         java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("OpioidCDS_STU3-0.1.0.xml");
         Library library = CqlLibraryReader.read(input);
@@ -79,8 +94,10 @@ public class TestOmtkDataProvider {
         context.registerLibraryLoader(new TestLibraryLoader());
         OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:sqlite://" + pathToDB);
         context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
-        FhirDataProviderStu3 fhirDataProvider = new FhirDataProviderStu3();
+        BaseFhirDataProvider fhirDataProvider = new FhirDataProviderStu3().setEndpoint("http://measure.eval.kanvix.com/cqf-ruler/baseDstu3");
         context.registerDataProvider("http://hl7.org/fhir", fhirDataProvider);
+        context.registerTerminologyProvider(new FhirTerminologyProvider().withEndpoint("http://measure.eval.kanvix.com/cqf-ruler/baseDstu3"));
+        loadTerminology(fhirDataProvider);
         context.setExpressionCaching(true);
         return context;
     }
@@ -136,6 +153,19 @@ public class TestOmtkDataProvider {
         return orders;
     }
 
+    private List<Observation> loadStu3Screenings() {
+        ArrayList<Observation> screenings = new ArrayList<>();
+        ca.uhn.fhir.parser.IParser parser = getStu3Context().newJsonParser();
+        java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("screening_illicit_drugs.json");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
+            Observation order = parser.parseResource(Observation.class, reader);
+            screenings.add(order);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return screenings;
+    }
+
     @Test
     public void testCdsOpioidDstu2LogicWithContext() throws IOException, JAXBException {
         // Deserialize medorder_buprenorphine_patch_draft.json as a MedicationOrder and pass in a list as the Orders argument to the Context
@@ -151,7 +181,14 @@ public class TestOmtkDataProvider {
     public void testCdsOpioidStu3LogicWithContext() throws IOException, JAXBException {
         Context context = setupStu3();
         context.setParameter(null, "Orders", loadStu3MedOrders());
+        context.setParameter(null, "Screenings", loadStu3Screenings());
+
         Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);
+        if (result == null) {
+            throw new RuntimeException("Test failed");
+        }
+
+        result = context.resolveExpressionRef("No Screenings in Past Year").getExpression().evaluate(context);
         if (result == null) {
             throw new RuntimeException("Test failed");
         }
