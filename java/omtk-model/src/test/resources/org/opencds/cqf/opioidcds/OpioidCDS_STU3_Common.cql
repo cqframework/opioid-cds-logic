@@ -1,30 +1,23 @@
-library OpioidCDS_STU3 version '0.1.0'
+library OpioidCDS_STU3_Common version '0.1.0'
 
 using FHIR version '3.0.0'
 
 include OMTKLogic version '0.1.0' called OMTKLogic
 
-/*
-**
-** Recommendation #5
-**
-*/
+valueset "Benzodiazepines": 'benzodiazepines'
+valueset "Naloxone": 'naloxone'
+valueset "Opioids": 'opioids'
+valueset "Ambulatory Abuse Potential Opioids": 'opioids-abused-in-ambulatory-care'
+valueset "Codeine Cough Meds": 'opioids-codeine-cough-meds'
+valueset "End Of Life Opioids": 'opioids-indicating-end-of-life'
+valueset "Short Acting Opioids": 'short-acting-opioids'
+valueset "Long Acting Opioids": 'long-acting-opioids'
 
-parameter UserID String
-parameter Orders List<MedicationRequest>
+define function GetOpioidsWithAmbulatoryAbusePotential (Orders List<MedicationRequest>):
+  Orders orders
+    where ToCode(orders.medication.coding[0]) in "Ambulatory Abuse Potential Opioids"
 
-context Patient
-
-// IsForChronicPain
-// TODO: Capture process decisions for long-term opioid use
-define IsForChronicPain: true
-
-// HasMetastaticCancer
-// TODO: Capture process decisions for metastatic cancer
-define HasMetastaticCancer: false
-
-// Prescriptions: rxNormCode, isDraft, isPRN, prescription String, dose Quantity, dosesPerDay Decimal
-define Prescriptions:
+define function Prescriptions(Orders List<MedicationRequest>):
   Orders O
     let
       // NOTE: Assuming medication is specified as a CodeableConcept with a single RxNorm code
@@ -68,11 +61,8 @@ define Prescriptions:
       dosesPerDay: Coalesce(OMTKLogic.ToDaily(frequency, period), 1.0)
     }
 
-// MME - Milligram Morphine Equivalents as a list of tuples:
-// List<Tuple { rxNormCode: Code, isDraft Boolean, isPRN Boolean, prescription String, dailyDose String, conversionFactor Decimal, mme System.Quantity }>
-// function CalculateMMEs(medications List<Tuple { rxNormCode Code, doseQuantity System.Quantity, dosesPerDay Decimal }>):
-define MME:
-  Prescriptions P
+define function MME(prescriptions List<MedicationRequest>):
+  (Prescriptions(prescriptions)) P
     let mme: SingletonFrom(OMTKLogic.CalculateMMEs({ { rxNormCode: P.rxNormCode, doseQuantity: P.dose, dosesPerDay: P.dosesPerDay } }))
     return {
       rxNormCode: P.rxNormCode,
@@ -83,34 +73,14 @@ define MME:
       conversionFactor: mme.conversionFactor,
       mme: mme.mme
     }
-    sort by if isDraft then 0 else 1, rxNormCode.code
+    // sort by if isDraft then 0 else 1, rxNormCode.code
 
-// TODO: Capture process decisions for MME calculation
-// TotalMME - Sum of all MME for currently and about-to-be prescribed opioid medications
-define TotalMME: System.Quantity { value: Sum(MME M return M.mme.value), unit: 'mg/d' }
+define function TotalMME(prescriptions List<MedicationRequest>):
+  System.Quantity {
+    value: Sum((MME(prescriptions)) M return M.mme.value),
+    unit: 'mg/d'
+  }
 
-define IsMME50OrMore: TotalMME >= 50 'mg/d'
-
-define getIndicator:
-  if IsMME50OrMore
-    then 'warning'
-  else 'success'
-
-define getSummary:
-  if IsMME50OrMore
-    then 'High risk for opioid overdose - '
-             + case when TotalMME.value >= 90
-                 then 'taper now'
-                 else 'consider tapering'
-               end
-  else 'MME is within the recommended range.'
-
-define getDetail:
-  if IsMME50OrMore
-      then 'Total morphine milligram equivalent (MME) is ' + ToString(TotalMME) + '. Taper to less than 50.'
-  else 'Total morphine milligram equivalent (MME) is ' + ToString(TotalMME) + '. This falls within the accepted range.'
-
-// NOTE: These functions have been moved here from the FHIRHelpers STU3 library to boost performance
 define function ToCode(coding FHIR.Coding):
   System.Code {
     code: coding.code.value,
@@ -122,12 +92,20 @@ define function ToCode(coding FHIR.Coding):
 define function ToQuantity(quantity FHIR.Quantity):
   System.Quantity { value: quantity.value.value, unit: quantity.unit.value }
 
-/*
-USCore profiles only support MedicationRequest and MedicationStatement, same as Argonaut Data Query
-See the DSTU2 Library for more information
+define function IsNaloxone(rxNormCode Code):
+  rxNormCode in "Naloxone"
 
-USCore's Medication Code is bound to:
-http://www.hl7.org/fhir/us/core/ValueSet-us-core-medication-codes.html
-The USCore MedicationRequest and MedicationStatement profiles do not require any dosage or frequency information
-*/
+define function IsBenzodiazepine(rxNormCode Code):
+  rxNormCode in "Benzodiazepines"
 
+define function IsOpioidWithAmbulatoryAbusePotential(rxNormCode Code):
+  rxNormCode in "Ambulatory Abuse Potential Opioids"
+
+define function IsLongActingOpioid(rxNormCode Code):
+  rxNormCode in "Long Acting Opioids"
+
+define function IsOpioid(rxNormCode Code):
+  rxNormCode in "Opioids"
+
+define function IsEndOfLifeOpioid(rxNormCode Code):
+  rxNormCode in "End Of Life Opioids"

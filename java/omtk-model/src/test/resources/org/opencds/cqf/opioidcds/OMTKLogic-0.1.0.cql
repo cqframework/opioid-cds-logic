@@ -361,3 +361,6 @@ define function CalculateMMEs(medications List<Tuple { rxNormCode Code, doseQuan
 
 define TestCalculateMMEs:
   CalculateMMEs({ { rxNormCode: Code '388508' from RxNorm, doseQuantity: Quantity { value: 1, unit: 'patch' }, dosesPerDay: 0.33 } })
+
+define function GetValueSetID(rxNormCode Code):
+  SingletonFrom([MED_DRUG_VALUE_SET: DRUG_RXCUI in rxNormCode]).VALUE_SET_ID

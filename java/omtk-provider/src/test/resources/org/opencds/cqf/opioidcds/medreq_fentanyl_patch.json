@@ -1,6 +1,5 @@
 {
   "resourceType": "MedicationRequest",
-  "authoredOn": "2017-01-01",
   "status": "active",
   "medicationCodeableConcept": {
     "coding": [
@@ -15,6 +14,7 @@
     "reference": "Patient/Patient-1121",
     "display": "Jerry Phillip Goodwall"
   },
+  "authoredOn": "2017-01-15",
   "reasonCode": [
     {
       "coding": [

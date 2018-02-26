@@ -1300,6 +1300,20 @@
             </operand>
          </expression>
       </def>
+      <def name="GetValueSetID" context="Patient" accessLevel="Public" xsi:type="FunctionDef">
+         <expression path="VALUE_SET_ID" xsi:type="Property">
+            <source xsi:type="SingletonFrom">
+               <operand xmlns:ns9="http://org.opencds/opioid-cds" dataType="ns9:MED_DRUG_VALUE_SET" codeProperty="DRUG_RXCUI" xsi:type="Retrieve">
+                  <codes xsi:type="ToList">
+                     <operand name="rxNormCode" xsi:type="OperandRef"/>
+                  </codes>
+               </operand>
+            </source>
+         </expression>
+         <operand name="rxNormCode">
+            <operandTypeSpecifier name="t:Code" xsi:type="NamedTypeSpecifier"/>
+         </operand>
+      </def>
    </statements>
 </library>
 

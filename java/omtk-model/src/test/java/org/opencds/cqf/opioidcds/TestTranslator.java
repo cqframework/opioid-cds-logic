@@ -51,7 +51,7 @@ public class TestTranslator {
     }
 
     @Test
-    public void testOpioidCDSSTU3() throws IOException {
+    public void testOpioidCDSSTU3_Common() throws IOException {
         OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
         FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
         ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
@@ -60,12 +60,52 @@ public class TestTranslator {
         libraryManager.getLibrarySourceLoader().clearProviders();
         libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
         libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
-        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3-0.1.0.cql");
+        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3_Common.cql");
         CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
         TranslatedLibrary library = translator.getTranslatedLibrary();
 
         checkErrors(translator);
-        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3-0.1.0.xml").toFile(), "UTF-8")) {
+        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3_Common.xml").toFile(), "UTF-8")) {
+            pw.println(translator.toXml());
+        }
+    }
+
+    @Test
+    public void testOpioidCDSSTU3_REC04() throws IOException {
+        OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
+        FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("3.0.0"), fhirProvider);
+        LibraryManager libraryManager = new LibraryManager(new ModelManager());
+        libraryManager.getLibrarySourceLoader().clearProviders();
+        libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
+        libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
+        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3_REC_04.cql");
+        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        TranslatedLibrary library = translator.getTranslatedLibrary();
+
+        checkErrors(translator);
+        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3_REC_04.xml").toFile(), "UTF-8")) {
+            pw.println(translator.toXml());
+        }
+    }
+
+    @Test
+    public void testOpioidCDSSTU3_REC05() throws IOException {
+        OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
+        FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("3.0.0"), fhirProvider);
+        LibraryManager libraryManager = new LibraryManager(new ModelManager());
+        libraryManager.getLibrarySourceLoader().clearProviders();
+        libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
+        libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
+        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3_REC_05.cql");
+        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        TranslatedLibrary library = translator.getTranslatedLibrary();
+
+        checkErrors(translator);
+        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3_REC_05.xml").toFile(), "UTF-8")) {
             pw.println(translator.toXml());
         }
 
@@ -77,6 +117,86 @@ public class TestTranslator {
 //        try (PrintWriter pw = new PrintWriter(Paths.get("UrineDrugTesting_STU3-0.1.0.xml").toFile(), "UTF-8")) {
 //            pw.println(translator.toXml());
 //        }
+    }
+
+    @Test
+    public void testOpioidCDSSTU3_REC07() throws IOException {
+        OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
+        FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("3.0.0"), fhirProvider);
+        LibraryManager libraryManager = new LibraryManager(new ModelManager());
+        libraryManager.getLibrarySourceLoader().clearProviders();
+        libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
+        libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
+        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3_REC_07.cql");
+        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        TranslatedLibrary library = translator.getTranslatedLibrary();
+
+        checkErrors(translator);
+        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3_REC_07.xml").toFile(), "UTF-8")) {
+            pw.println(translator.toXml());
+        }
+    }
+
+    @Test
+    public void testOpioidCDSSTU3_REC08() throws IOException {
+        OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
+        FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("3.0.0"), fhirProvider);
+        LibraryManager libraryManager = new LibraryManager(new ModelManager());
+        libraryManager.getLibrarySourceLoader().clearProviders();
+        libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
+        libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
+        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3_REC_08.cql");
+        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        TranslatedLibrary library = translator.getTranslatedLibrary();
+
+        checkErrors(translator);
+        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3_REC_08.xml").toFile(), "UTF-8")) {
+            pw.println(translator.toXml());
+        }
+    }
+
+    @Test
+    public void testOpioidCDSSTU3_REC10() throws IOException {
+        OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
+        FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("3.0.0"), fhirProvider);
+        LibraryManager libraryManager = new LibraryManager(new ModelManager());
+        libraryManager.getLibrarySourceLoader().clearProviders();
+        libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
+        libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
+        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3_REC_10.cql");
+        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        TranslatedLibrary library = translator.getTranslatedLibrary();
+
+        checkErrors(translator);
+        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3_REC_10.xml").toFile(), "UTF-8")) {
+            pw.println(translator.toXml());
+        }
+    }
+
+    @Test
+    public void testOpioidCDSSTU3_REC11() throws IOException {
+        OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
+        FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
+        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("3.0.0"), fhirProvider);
+        LibraryManager libraryManager = new LibraryManager(new ModelManager());
+        libraryManager.getLibrarySourceLoader().clearProviders();
+        libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
+        libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
+        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_STU3_REC_11.cql");
+        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
+        TranslatedLibrary library = translator.getTranslatedLibrary();
+
+        checkErrors(translator);
+        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3_REC_11.xml").toFile(), "UTF-8")) {
+            pw.println(translator.toXml());
+        }
     }
 
     @Test
@@ -106,7 +226,9 @@ public class TestTranslator {
             if (libraryIdentifier.getId().equals("OMTKLogic") && libraryIdentifier.getVersion().equals("0.1.0")) {
                 return TestTranslator.class.getResourceAsStream("OMTKLogic-0.1.0.cql");
             }
-
+            if (libraryIdentifier.getId().equals("OpioidCDS_STU3_Common") && libraryIdentifier.getVersion().equals("0.1.0")) {
+                return TestTranslator.class.getResourceAsStream("OpioidCDS_STU3_Common.cql");
+            }
             return null;
         }
     }
