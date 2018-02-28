@@ -31,26 +31,6 @@ public class TestTranslator {
     }
 
     @Test
-    public void testOpioidCDSDSTU2() throws IOException {
-        OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
-        FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("1.0.2");
-        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("OMTK").withVersion("0.1.0"), omtkProvider);
-        ModelInfoLoader.registerModelInfoProvider(new VersionedIdentifier().withId("FHIR").withVersion("1.0.2"), fhirProvider);
-        LibraryManager libraryManager = new LibraryManager(new ModelManager());
-        libraryManager.getLibrarySourceLoader().clearProviders();
-        libraryManager.getLibrarySourceLoader().registerProvider(new TestLibrarySourceProvider());
-        libraryManager.getLibrarySourceLoader().registerProvider(new FhirLibrarySourceProvider());
-        InputStream test = TestTranslator.class.getResourceAsStream("OpioidCDS_DSTU2-0.1.0.cql");
-        CqlTranslator translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
-        TranslatedLibrary library = translator.getTranslatedLibrary();
-
-        checkErrors(translator);
-        try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_DSTU2-0.1.0.xml").toFile(), "UTF-8")) {
-            pw.println(translator.toXml());
-        }
-    }
-
-    @Test
     public void testOpioidCDSSTU3_Common() throws IOException {
         OmtkModelInfoProvider omtkProvider = new OmtkModelInfoProvider().withVersion("0.1.0");
         FhirModelInfoProvider fhirProvider = new FhirModelInfoProvider().withVersion("3.0.0");
@@ -108,15 +88,6 @@ public class TestTranslator {
         try (PrintWriter pw = new PrintWriter(Paths.get("OpioidCDS_STU3_REC_05.xml").toFile(), "UTF-8")) {
             pw.println(translator.toXml());
         }
-
-//        test = TestTranslator.class.getResourceAsStream("UrineDrugTesting_STU3-0.1.0.cql");
-//        translator = CqlTranslator.fromStream(test, new ModelManager(), libraryManager, CqlTranslator.Options.EnableDetailedErrors);
-//        library = translator.getTranslatedLibrary();
-//
-//        checkErrors(translator);
-//        try (PrintWriter pw = new PrintWriter(Paths.get("UrineDrugTesting_STU3-0.1.0.xml").toFile(), "UTF-8")) {
-//            pw.println(translator.toXml());
-//        }
     }
 
     @Test

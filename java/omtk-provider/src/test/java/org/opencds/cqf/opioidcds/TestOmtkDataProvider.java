@@ -59,25 +59,6 @@ public class TestOmtkDataProvider {
         }
     }
 
-    private Context setupDSTU2() throws IOException, JAXBException {
-        java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("OpioidCDS_DSTU2-0.1.0.xml");
-        Library library = CqlLibraryReader.read(input);
-        Context context = new Context(library);
-        context.registerLibraryLoader(new TestLibraryLoader());
-        OmtkDataProvider omtkDataProvider = new OmtkDataProvider("jdbc:sqlite://" + pathToDB);
-        context.registerDataProvider("http://org.opencds/opioid-cds", omtkDataProvider);
-        FhirDataProviderDstu2 fhirDataProvider = new FhirDataProviderDstu2();
-        fhirDataProvider.setPackageName("ca.uhn.fhir.model.dstu2.resource");
-        context.registerDataProvider("http://hl7.org/fhir", fhirDataProvider);
-        FhirDataProviderDstu2 primitivefhirDataProvider = new FhirDataProviderDstu2();
-        primitivefhirDataProvider.setPackageName("ca.uhn.fhir.model.primitive");
-        context.registerDataProvider("http://hl7.org/fhir", primitivefhirDataProvider);
-        FhirDataProviderDstu2 compositefhirDataProvider = new FhirDataProviderDstu2();
-        compositefhirDataProvider.setPackageName("ca.uhn.fhir.model.dstu2.composite");
-        context.registerDataProvider("http://hl7.org/fhir", compositefhirDataProvider);
-        return context;
-    }
-
     private void loadTerminology(BaseFhirDataProvider fhirDataProvider) {
         InputStream is = TestOmtkDataProvider.class.getResourceAsStream("cdc-opioid-guidance-opioid-screening-valueset.json");
         Scanner scanner = new Scanner(is).useDelimiter("\\A");
@@ -103,25 +84,7 @@ public class TestOmtkDataProvider {
         context.registerDataProvider("http://hl7.org/fhir", fhirDataProvider);
         context.registerTerminologyProvider(new FhirTerminologyProvider().withEndpoint("http://measure.eval.kanvix.com/cqf-ruler/baseDstu3"));
         loadTerminology(fhirDataProvider);
-//        context.setExpressionCaching(true);
         return context;
-    }
-
-    @Test
-    public void testCdsOpioidLogic() throws IOException, JAXBException {
-        Context context = setupDSTU2();
-        Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);
-        if (result == null) {
-            throw new RuntimeException("Test failed");
-        }
-    }
-
-    private FhirContext dstu2Context;
-    private FhirContext getDstu2Context() {
-        if (dstu2Context == null) {
-            dstu2Context = FhirContext.forDstu2();
-        }
-        return dstu2Context;
     }
 
     private FhirContext stu3Context;
@@ -130,68 +93,6 @@ public class TestOmtkDataProvider {
             stu3Context = FhirContext.forDstu3();
         }
         return stu3Context;
-    }
-
-    private List<MedicationOrder> loadDstu2MedOrders() {
-        ArrayList<MedicationOrder> orders = new ArrayList<>();
-        ca.uhn.fhir.parser.IParser parser = getDstu2Context().newJsonParser();
-        java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("medorder_buprenorphine_patch_draft.json");
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
-            MedicationOrder order = parser.parseResource(MedicationOrder.class, reader);
-            orders.add(order);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return orders;
-    }
-
-    private List<MedicationRequest> loadStu3MedOrders(String sourceFileName) {
-        ArrayList<MedicationRequest> orders = new ArrayList<>();
-        ca.uhn.fhir.parser.IParser parser = getStu3Context().newJsonParser();
-        java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream(sourceFileName);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
-            MedicationRequest order = parser.parseResource(MedicationRequest.class, reader);
-            orders.add(order);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return orders;
-    }
-
-    private List<Observation> loadStu3Screenings() {
-        ArrayList<Observation> screenings = new ArrayList<>();
-        ca.uhn.fhir.parser.IParser parser = getStu3Context().newJsonParser();
-        java.io.InputStream input = TestOmtkDataProvider.class.getResourceAsStream("screening_illicit_drugs.json");
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
-            Observation order = parser.parseResource(Observation.class, reader);
-            screenings.add(order);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return screenings;
-    }
-
-    @Test
-    public void testCdsOpioidDstu2LogicWithContext() throws IOException, JAXBException {
-        // Deserialize medorder_buprenorphine_patch_draft.json as a MedicationOrder and pass in a list as the Orders argument to the Context
-        Context context = setupDSTU2();
-        context.setParameter(null, "Orders", loadDstu2MedOrders());
-        Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);
-        if (result == null) {
-            throw new RuntimeException("Test failed");
-        }
-    }
-
-    @Test
-    public void testCdsOpioidStu3LogicWithContext() throws IOException, JAXBException {
-        Context context = setupStu3("OpioidCDS_STU3-0.1.0.xml");
-        context.setParameter(null, "Orders", loadStu3MedOrders("medreq_fentanyl_patch.json"));
-        context.setParameter(null, "Screenings", loadStu3Screenings());
-
-        Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);
-        if (result == null) {
-            throw new RuntimeException("Test failed");
-        }
     }
 
     @Test
@@ -278,16 +179,28 @@ public class TestOmtkDataProvider {
     @Test
     public void testCdsOpioidStu3Recommendation05() throws IOException, JAXBException {
         Context context = setupStu3("OpioidCDS_STU3_REC_05.xml");
-        context.setParameter(null, "Orders", loadStu3MedOrders("medreq_fentanyl_patch.json"));
-        Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);
-        if (result == null) {
-            throw new RuntimeException("Test failed");
-        }
 
-        result = context.resolveExpressionRef("MMETotal").getExpression().evaluate(context);
-        if (result == null) {
-            throw new RuntimeException("Test failed");
-        }
+        String todayMinusSixMonths = LocalDate.now().minusMonths(6L).toString();
+        String todayPlusSixMonths = LocalDate.now().plusMonths(6L).toString();
+        MedicationRequest contextPrescription =
+                new MedicationRequestBuilder()
+                        .buildIntent("order")
+                        .buildCategory("outpatient")
+                        .buildMedicationCodeableConcept("197696", "72 HR Fentanyl 0.075 MG/HR Transdermal System")
+                        .buildSubject("Patient/example-rec-05")
+                        .buildAuthoredOn(null)
+                        .buildDosageInstruction(
+                                new DosageBuilder().buildTiming(1, 3.0, "d")
+                                        .buildDose(1.0, "patch")
+                                        .buildAsNeeded(false)
+                                        .build()
+                        )
+                        .buildDispenseRequest(todayMinusSixMonths, todayPlusSixMonths, 3, 30.0, "d")
+                        .build();
+        context.setParameter(null, "Orders", Collections.singletonList(contextPrescription));
+        Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);
+
+        Assert.assertTrue((Boolean) result);
     }
 
     @Test
@@ -302,7 +215,7 @@ public class TestOmtkDataProvider {
                         .buildIntent("order")
                         .buildCategory("outpatient")
                         .buildMedicationCodeableConcept("1049502", "12 HR Oxycodone Hydrochloride 10 MG Extended Release Oral Tablet")
-                        .buildSubject("Patient/example-rec-04")
+                        .buildSubject("Patient/example-rec-07")
                         .buildAuthoredOn(null)
                         .buildDosageInstruction(
                                 new DosageBuilder().buildTiming(3, 1.0, "d").build()
@@ -323,7 +236,7 @@ public class TestOmtkDataProvider {
                         .buildIntent("order")
                         .buildCategory("outpatient")
                         .buildMedicationCodeableConcept("1049502", "12 HR Oxycodone Hydrochloride 10 MG Extended Release Oral Tablet")
-                        .buildSubject("Patient/example-rec-04")
+                        .buildSubject("Patient/example-rec-07")
                         .buildAuthoredOn(null)
                         .buildDosageInstruction(
                                 new DosageBuilder().buildTiming(3, 1.0, "d").build()
@@ -342,8 +255,12 @@ public class TestOmtkDataProvider {
                 new MedicationRequestBuilder()
                         .buildIntent("order")
                         .buildMedicationCodeableConcept("1012727", "Carbinoxamine maleate 0.4 MG/ML / Hydrocodone Bitartrate 1 MG/ML / Pseudoephedrine Hydrochloride 6 MG/ML Oral Solution")
-                        .buildSubject("Patient/example-rec-04")
+                        .buildSubject("Patient/example-rec-07")
                         .buildAuthoredOn(todayMinusTwoWeeks)
+                        .buildDosageInstruction(
+                                new DosageBuilder().buildTiming(3, 1.0, "d").build()
+                        )
+                        .buildDispenseRequest(todayMinusSixWeeks, todayPlusSixWeeks, 3, 30.0, "d")
                         .build();
         context.setParameter(null, "Orders", Arrays.asList(contextPrescription, orders));
 
@@ -365,7 +282,7 @@ public class TestOmtkDataProvider {
                         .buildIntent("order")
                         .buildCategory("outpatient")
                         .buildMedicationCodeableConcept("197696", "72 HR Fentanyl 0.075 MG/HR Transdermal System")
-                        .buildSubject("Patient/example-rec-04")
+                        .buildSubject("Patient/example-rec-08")
                         .buildAuthoredOn(null)
                         .buildDosageInstruction(
                                 new DosageBuilder().buildTiming(1, 12.0, "d")
@@ -387,7 +304,7 @@ public class TestOmtkDataProvider {
                         .buildIntent("order")
                         .buildCategory("outpatient")
                         .buildMedicationCodeableConcept("197696", "72 HR Fentanyl 0.075 MG/HR Transdermal System")
-                        .buildSubject("Patient/example-rec-04")
+                        .buildSubject("Patient/example-rec-08")
                         .buildAuthoredOn(null)
                         .buildDosageInstruction(
                                 new DosageBuilder().buildTiming(1, 10.0, "d")
@@ -409,7 +326,7 @@ public class TestOmtkDataProvider {
                         .buildIntent("order")
                         .buildCategory("outpatient")
                         .buildMedicationCodeableConcept("104693", "Temazepam 20 MG Oral Tablet")
-                        .buildSubject("Patient/example-rec-04")
+                        .buildSubject("Patient/example-rec-08")
                         .buildAuthoredOn(null)
                         .buildDosageInstruction(
                                 new DosageBuilder().buildTiming(1, 1.0, "d")
@@ -432,7 +349,7 @@ public class TestOmtkDataProvider {
                         .buildIntent("order")
                         .buildCategory("outpatient")
                         .buildMedicationCodeableConcept("1191212", "Naloxone Hydrochloride 0.02 MG/ML Injectable Solution")
-                        .buildSubject("Patient/example-rec-04")
+                        .buildSubject("Patient/example-rec-84")
                         .buildAuthoredOn(null)
                         .buildDosageInstruction(
                                 new DosageBuilder().buildTiming(1, 1.0, "d")
@@ -451,6 +368,126 @@ public class TestOmtkDataProvider {
     }
 
     @Test
+    public void testCdsOpioidStu3Recommendation10() throws IOException, JAXBException {
+        Context context = setupStu3("OpioidCDS_STU3_REC_10.xml");
+
+        // No urine screenings in past year case
+        String todayMinusSixWeeks = LocalDate.now().minusWeeks(6L).toString();
+        String todayPlusSixWeeks = LocalDate.now().plusWeeks(6L).toString();
+        MedicationRequest contextPrescription =
+                new MedicationRequestBuilder()
+                        .buildIntent("order")
+                        .buildCategory("outpatient")
+                        .buildMedicationCodeableConcept("1049502", "12 HR Oxycodone Hydrochloride 10 MG Extended Release Oral Tablet")
+                        .buildSubject("Patient/example-rec-10")
+                        .buildAuthoredOn(todayMinusSixWeeks)
+                        .buildDosageInstruction(
+                                new DosageBuilder().buildTiming(3, 1.0, "d").build()
+                        )
+                        .buildDispenseRequest(todayMinusSixWeeks, todayPlusSixWeeks, 3, 30.0, "d")
+                        .build();
+        context.setParameter(null, "ContextPrescription", contextPrescription);
+        context.setParameter(null, "Orders", Collections.singletonList(contextPrescription));
+
+        Object result = context.resolveExpressionRef("Inclusion Criteria").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        result = context.resolveExpressionRef("No Urine Screening In Last 12 Months").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        // Missing prescribed opioids case
+        String todayMinusFourWeeks = LocalDate.now().minusWeeks(4L).toString();
+        Observation atropineScreening =
+                new ObservationBuilder().buildCode("14184-6").buildEffective(todayMinusFourWeeks).build();
+
+        context.setParameter(null, "ObservationsInPastYear", Collections.singletonList(atropineScreening));
+
+        result = context.resolveExpressionRef("Inclusion Criteria").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        result = context.resolveExpressionRef("Has Missing Opioids?").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        // Not missing prescribed opioids case
+        Observation oxycodoneScreening =
+                new ObservationBuilder().buildCode("10998-3").buildEffective(todayMinusFourWeeks).build();
+
+        context.setParameter(null, "ObservationsInPastYear", Collections.singletonList(oxycodoneScreening));
+
+        result = context.resolveExpressionRef("Inclusion Criteria").getExpression().evaluate(context);
+        Assert.assertFalse((Boolean) result);
+
+        // Unprescribed opioid case
+        String todayMinusThreeWeeks = LocalDate.now().minusWeeks(3L).toString();
+        Observation codeineWithOxycodoneScreening =
+                new ObservationBuilder()
+                        .buildCode("3507-1")
+                        .buildEffective(todayMinusThreeWeeks)
+                        .buildComponent("10998-3")
+                        .build();
+
+        context.setParameter(null, "ObservationsInPastYear", Arrays.asList(oxycodoneScreening, codeineWithOxycodoneScreening));
+
+        result = context.resolveExpressionRef("Inclusion Criteria").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        result = context.resolveExpressionRef("Has Unprescribed Opioids?").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        // Illicit drug case
+        Observation illicitDrugScreening =
+                new ObservationBuilder()
+                        .buildCode("3426-4")
+                        .buildEffective(todayMinusThreeWeeks)
+                        .build();
+
+        context.setParameter(null, "ObservationsInPastYear", Collections.singletonList(illicitDrugScreening));
+
+        result = context.resolveExpressionRef("Inclusion Criteria").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        result = context.resolveExpressionRef("Has Illicit Drugs in Screening?").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        illicitDrugScreening =
+                new ObservationBuilder()
+                        .buildCode("10998-3")
+                        .buildEffective(todayMinusThreeWeeks)
+                        .buildComponent("3397-7")
+                        .build();
+
+        context.setParameter(null, "ObservationsInPastYear", Collections.singletonList(illicitDrugScreening));
+
+        result = context.resolveExpressionRef("Inclusion Criteria").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        result = context.resolveExpressionRef("Has Illicit Drugs in Screening?").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+
+        // Exclusion criteria case
+        contextPrescription =
+                new MedicationRequestBuilder()
+                        .buildIntent("order")
+                        .buildCategory("outpatient")
+                        .buildMedicationCodeableConcept("1012727", "Carbinoxamine maleate 0.4 MG/ML / Hydrocodone Bitartrate 1 MG/ML / Pseudoephedrine Hydrochloride 6 MG/ML Oral Solution")
+                        .buildSubject("Patient/example-rec-10")
+                        .buildAuthoredOn(todayMinusSixWeeks)
+                        .buildDosageInstruction(
+                                new DosageBuilder().buildTiming(3, 1.0, "d").build()
+                        )
+                        .buildDispenseRequest(todayMinusSixWeeks, todayPlusSixWeeks, 3, 30.0, "d")
+                        .build();
+        context.setParameter(null, "ContextPrescription", contextPrescription);
+        context.setParameter(null, "Orders", Collections.singletonList(contextPrescription));
+
+        result = context.resolveExpressionRef("Inclusion Criteria").getExpression().evaluate(context);
+        Assert.assertFalse((Boolean) result);
+
+        result = context.resolveExpressionRef("Exclusion Criteria").getExpression().evaluate(context);
+        Assert.assertTrue((Boolean) result);
+    }
+
+    @Test
     public void testCdsOpioidStu3Recommendation11() throws IOException, JAXBException {
         Context context = setupStu3("OpioidCDS_STU3_REC_11.xml");
 
@@ -459,7 +496,7 @@ public class TestOmtkDataProvider {
                 new MedicationRequestBuilder()
                         .buildIntent("order")
                         .buildMedicationCodeableConcept("1298088", "Flurazepam Hydrochloride 15 MG Oral Capsule")
-                        .buildSubject("Patient/example-rec-04")
+                        .buildSubject("Patient/example-rec-11")
                         .buildAuthoredOn(null)
                         .build();
         context.setParameter(null, "ContextPrescription", contextPrescription);
@@ -468,7 +505,7 @@ public class TestOmtkDataProvider {
                 new MedicationRequestBuilder()
                         .buildIntent("order")
                         .buildMedicationCodeableConcept("1049502", "12 HR Oxycodone Hydrochloride 10 MG Extended Release Oral Tablet")
-                        .buildSubject("Patient/example-rec-04")
+                        .buildSubject("Patient/example-rec-11")
                         .buildAuthoredOn("2017-10-25")
                         .build();
         context.setParameter(null, "Orders", Collections.singletonList(orders));
@@ -495,15 +532,15 @@ public class TestOmtkDataProvider {
         Assert.assertFalse((Boolean) result);
     }
 
-    @Test
-    public void testCdsOpioidStu3v18LogicWithContext() throws IOException, JAXBException {
-        Context context = setupStu3("OpioidCDS_STU3-0.1.0.xml");
-        context.setParameter(null, "Orders", loadStu3MedOrders("medreq_fentanyl_patch.json"));
-        Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);
-        if (result == null) {
-            throw new RuntimeException("Test failed");
-        }
-    }
+//    @Test
+//    public void testCdsOpioidStu3v18LogicWithContext() throws IOException, JAXBException {
+//        Context context = setupStu3("OpioidCDS_STU3-0.1.0.xml");
+//        context.setParameter(null, "Orders", loadStu3MedOrders("medreq_fentanyl_patch.json"));
+//        Object result = context.resolveExpressionRef("IsMME50OrMore").getExpression().evaluate(context);
+//        if (result == null) {
+//            throw new RuntimeException("Test failed");
+//        }
+//    }
 
     class TestLibraryLoader implements LibraryLoader {
 
