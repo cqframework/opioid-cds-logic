@@ -398,7 +398,11 @@ public class TestOmtkDataProvider {
         // Missing prescribed opioids case
         String todayMinusFourWeeks = LocalDate.now().minusWeeks(4L).toString();
         Observation atropineScreening =
-                new ObservationBuilder().buildCode("14184-6").buildEffective(todayMinusFourWeeks).build();
+                new ObservationBuilder()
+                        .buildCode("14184-6")
+                        .buildEffective(todayMinusFourWeeks)
+                        .buildInterpretation("POS")
+                        .build();
 
         context.setParameter(null, "ObservationsInPastYear", Collections.singletonList(atropineScreening));
 
@@ -410,7 +414,11 @@ public class TestOmtkDataProvider {
 
         // Not missing prescribed opioids case
         Observation oxycodoneScreening =
-                new ObservationBuilder().buildCode("10998-3").buildEffective(todayMinusFourWeeks).build();
+                new ObservationBuilder()
+                        .buildCode("10998-3")
+                        .buildEffective(todayMinusFourWeeks)
+                        .buildInterpretation("POS")
+                        .build();
 
         context.setParameter(null, "ObservationsInPastYear", Collections.singletonList(oxycodoneScreening));
 
@@ -423,7 +431,8 @@ public class TestOmtkDataProvider {
                 new ObservationBuilder()
                         .buildCode("3507-1")
                         .buildEffective(todayMinusThreeWeeks)
-                        .buildComponent("10998-3")
+                        .buildInterpretation("POS")
+                        .buildComponent("10998-3", "POS")
                         .build();
 
         context.setParameter(null, "ObservationsInPastYear", Arrays.asList(oxycodoneScreening, codeineWithOxycodoneScreening));
@@ -439,6 +448,7 @@ public class TestOmtkDataProvider {
                 new ObservationBuilder()
                         .buildCode("3426-4")
                         .buildEffective(todayMinusThreeWeeks)
+                        .buildInterpretation("POS")
                         .build();
 
         context.setParameter(null, "ObservationsInPastYear", Collections.singletonList(illicitDrugScreening));
@@ -453,7 +463,8 @@ public class TestOmtkDataProvider {
                 new ObservationBuilder()
                         .buildCode("10998-3")
                         .buildEffective(todayMinusThreeWeeks)
-                        .buildComponent("3397-7")
+                        .buildInterpretation("POS")
+                        .buildComponent("3397-7", "POS")
                         .build();
 
         context.setParameter(null, "ObservationsInPastYear", Collections.singletonList(illicitDrugScreening));

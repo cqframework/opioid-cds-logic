@@ -102,20 +102,40 @@ define "No Urine Screening In Last 12 Months":
   "Most Recent Illicit Drug Urine Screenings in Last 12 Months" is null
     and "Most Recent Opioid Drug Urine Screenings in Last 12 Months" is null
 
+define "Positive Illicit Drug Screening":
+  "Most Recent Illicit Drug Urine Screenings in Last 12 Months" mostRecentScreening
+    where mostRecentScreening.interpretation.coding[0].code.value = 'POS'
+      or
+        (if mostRecentScreening.component[0] is not null
+          then mostRecentScreening.component[0].interpretation.coding[0].code.value = 'POS'
+        else false)
+
 define "Has Illicit Drugs in Screening?":
-  exists ("Most Recent Illicit Drug Urine Screenings in Last 12 Months")
+  exists ("Positive Illicit Drug Screening")
 
 // Assuming only one code
 define "Inconsistent Illicit Drugs":
-  'Found the following illicit drug(s) in urine drug screen: '
-      + GetIllicitDrug("Most Recent Illicit Drug Urine Screenings in Last 12 Months".code.coding[0].code.value)
+  'Found the following illicit drug(s) in urine drug screen: ' +
+    (
+      if GetIllicitDrug("Positive Illicit Drug Screening".code.coding[0].code.value) is null
+        then GetIllicitDrug("Positive Illicit Drug Screening".interpretation.coding[0].code.value)
+      else GetIllicitDrug("Positive Illicit Drug Screening".code.coding[0].code.value)
+    )
+
+define "Positive Opioid Drug Screening":
+  "Most Recent Opioid Drug Urine Screenings in Last 12 Months" mostRecentScreening
+    where mostRecentScreening.interpretation.coding[0].code.value = 'POS'
+      or
+        (if mostRecentScreening.component[0] is not null
+          then mostRecentScreening.component[0].interpretation.coding[0].code.value = 'POS'
+        else false)
 
 define "Has Opioids in Screening?":
-  exists ("Most Recent Opioid Drug Urine Screenings in Last 12 Months")
+  exists ("Positive Opioid Drug Screening")
 
 define "Orders Before Most Recent Opioid Screening":
   Orders orders
-      with "Most Recent Opioid Drug Urine Screenings in Last 12 Months" mostRecentScreening
+      with "Positive Opioid Drug Screening" mostRecentScreening
         such that orders.authoredOn.value < mostRecentScreening.effective.value
       return
         orders
@@ -126,7 +146,7 @@ define "Prescribed Opioids":
       Lower(Common.GetIngredient(Common.ToCode(orders.medication.coding[0])))
 
 define "Get Opioids From Most Recent Screening":
-  "Most Recent Opioid Drug Urine Screenings in Last 12 Months" mostRecentScreening
+  "Positive Opioid Drug Screening" mostRecentScreening
     return
       Lower(GetOpioid(mostRecentScreening.code.coding[0].code.value))
         union (
@@ -149,11 +169,11 @@ define "Inconsistent Unprescribed Opioids":
   'Found the following unprescribed opioid(s): ' + "Unprescribed Opioids"
 
 define "Missing Opioids":
-  if "Most Recent Opioid Drug Urine Screenings in Last 12 Months" is not null
+  if "Positive Opioid Drug Screening" is not null
   then
     "Prescribed Opioids" Prescriptions
       except
-        Lower(GetOpioid("Most Recent Opioid Drug Urine Screenings in Last 12 Months".code.coding[0].code.value))
+        Lower(GetOpioid("Positive Opioid Drug Screening".code.coding[0].code.value))
   else null
 
 define "Has Missing Opioids?":
