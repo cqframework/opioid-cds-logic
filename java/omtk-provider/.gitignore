@@ -8,8 +8,6 @@
 out
 gen### Java template
 # Compiled class file
-*.class
-
 # Log file
 *.log
 
@@ -44,3 +42,7 @@ buildNumber.properties
 !/.mvn/wrapper/maven-wrapper.jar
 
 /src/test/resources/org/opencds/cqf/opioidcds/LocalDataStore_RxNav_OpioidCds.db
+/src/test/resources/org/opencds/cqf/opioidcds/output/resources/
+/src/test/resources/org/opencds/cqf/opioidcds/output/requests/
+/src/test/resources/org/opencds/cqf/opioidcds/output/bundles/
+/src/test/resources/org/opencds/cqf/opioidcds/output/terminology/

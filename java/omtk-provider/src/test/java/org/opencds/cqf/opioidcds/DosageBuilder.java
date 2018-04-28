@@ -2,7 +2,7 @@ package org.opencds.cqf.opioidcds;
 
 import org.hl7.fhir.dstu3.model.BooleanType;
 import org.hl7.fhir.dstu3.model.Dosage;
-import org.hl7.fhir.dstu3.model.Quantity;
+import org.hl7.fhir.dstu3.model.SimpleQuantity;
 import org.hl7.fhir.dstu3.model.Timing;
 import org.hl7.fhir.exceptions.FHIRException;
 
@@ -42,7 +42,7 @@ public class DosageBuilder extends BaseBuilder<Dosage> {
     }
 
     public DosageBuilder buildDose(double value, String unit) {
-        complexProperty.setDose(new Quantity().setValue(value).setUnit(unit));
+        complexProperty.setDose(new SimpleQuantity().setValue(value).setUnit(unit));
         return this;
     }
 }

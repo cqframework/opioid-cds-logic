@@ -1,8 +1,8 @@
-library OpioidCDS_STU3_REC_08 version '0.1.0'
+library OpioidCDS_STU3_REC_04 version '0.1.0'
 
 using FHIR version '3.0.0'
 
-include OpioidCDS_STU3_Common version '0.1.0' called Common
+include OpioidCDSCommonSTU3 version '0.1.0' called Common
 
 /*
 **
@@ -28,9 +28,8 @@ include OpioidCDS_STU3_Common version '0.1.0' called Common
     Have availability to snooze if benefits outweigh risks or if not applicable
 */
 
-parameter ContextPrescription MedicationRequest
-parameter Orders List<MedicationRequest> // includes the ContextPrescription
-parameter Encounters List<Encounter>
+// Trigger Event Rx
+parameter ContextPrescriptions List<MedicationRequest>
 
 context Patient
 
@@ -38,30 +37,40 @@ define "Inclusion Period":
   Interval[Today() - 91 days, Today() - 1 days]
 
 define "Encounter Period":
-  Interval[Today() - 1 years - 1 days, Today() - 1 days]
+  Interval[Today() - 12 months - 1 days, Today() - 1 days]
+
+define "Trigger Event Prescriptions":
+  ContextPrescriptions triggerScripts
+    let rxNormCode: Common.ToCode(triggerScripts.medication.coding[0])
+      where rxNormCode in Common."Ambulatory Abuse Potential Opioids"
+        and rxNormCode in Common."Long Acting Opioids"
 
 define "Validate Trigger Event":
-  exists(
-    ContextPrescription triggerScript
-      let rxNormCode: Common.ToCode(triggerScript.medication.coding[0])
-        where Common.IsOpioidWithAmbulatoryAbusePotential(rxNormCode)
-          and Common.IsLongActingOpioid(rxNormCode)
-  )
+  exists( "Trigger Event Prescriptions" )
 
 define "Inclusion Criteria":
   "Validate Trigger Event"
-  and not "Opioid with Ambulatory Care Abuse Potential in Past 90 Days"
+  and not "Exclusion Criteria"
+  and not exists(
+    Common."Ambulatory Opioid Rx" orders
+      where date from orders.authoredOn.value in day of "Inclusion Period"
+  )
   and exists(
-    Encounters encounters
-      where encounters.period."start".value in "Encounter Period"
+    [Encounter] encounters
+      where date from encounters.period."start".value in day of "Encounter Period"
   )
 
-define "Opioid with Ambulatory Care Abuse Potential in Past 90 Days":
-  exists(
-      Orders orders
-        where Common.IsOpioidWithAmbulatoryAbusePotential(Common.ToCode(orders.medication.coding[0]))
-          and orders.authoredOn.value in "Inclusion Period"
-    )
+define "Exclusion Criteria":
+  Common."End of Life Assessment"
+    or Common."Is Context Prescription End of Life Opioid?"(ContextPrescriptions)
 
-define "Get Notification":
+define "Get Indicator":
+  'warning'
+
+define "Get Summary":
   'Recommend use of immediate-release opioids instead of extended release/long acting opioids when starting patient on opioids.'
+
+define "Get Detail":
+  'The following medication requests(s) release rates should be re-evaluated: ' + Common.GetMedicationNames("Trigger Event Prescriptions")
+
+// TODO - I would like to be able to offer the medication's immediate release form as a suggestions

@@ -3,8 +3,8 @@ package org.opencds.cqf.opioidcds;
 import org.hl7.fhir.dstu3.model.*;
 import org.hl7.fhir.exceptions.FHIRException;
 
+import javax.annotation.Nonnull;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
 public class MedicationRequestBuilder extends BaseBuilder<MedicationRequest> {
@@ -16,10 +16,13 @@ public class MedicationRequestBuilder extends BaseBuilder<MedicationRequest> {
     /*
     *
     * Supported Attributes
+    *   id
+    *   status
     *   intent
     *   category
     *   medicationCodeableConcept
     *   subject
+    *   context
     *   authoredOn
     *   dosageInstruction
     *   dispenseRequest
@@ -28,6 +31,20 @@ public class MedicationRequestBuilder extends BaseBuilder<MedicationRequest> {
     *       .expectedSupplyDuration
     *
     * */
+
+    public MedicationRequestBuilder buildId(String id) {
+        complexProperty.setId(id);
+        return this;
+    }
+
+    public MedicationRequestBuilder buildStatus(String status) {
+        try {
+            complexProperty.setStatus(MedicationRequest.MedicationRequestStatus.fromCode(status));
+        } catch (FHIRException e) {
+            throw new RuntimeException("Invalid status code: " + status + "\nMessage: " + e.getMessage());
+        }
+        return this;
+    }
 
     public MedicationRequestBuilder buildIntent(String intent) {
         try {
@@ -39,7 +56,13 @@ public class MedicationRequestBuilder extends BaseBuilder<MedicationRequest> {
     }
 
     public MedicationRequestBuilder buildCategory(String category) {
-        complexProperty.setCategory(new CodeableConcept().addCoding(new Coding().setCode(category)));
+        complexProperty.setCategory(
+                new CodeableConcept().addCoding(
+                        new Coding()
+                                .setSystem("http://hl7.org/fhir/medication-request-category")
+                                .setCode(category)
+                )
+        );
         return this;
     }
 
@@ -58,7 +81,7 @@ public class MedicationRequestBuilder extends BaseBuilder<MedicationRequest> {
         complexProperty.setMedication(
                 new CodeableConcept().addCoding(
                         new Coding()
-                                .setSystem("http://hl7.org/fhir/ig/opioid-cds/CodeSystem/opioidcds-rxnorm-codes")
+                                .setSystem("http://www.nlm.nih.gov/research/umls/rxnorm")
                                 .setCode(code)
                                 .setDisplay(display)
                 )
@@ -76,8 +99,19 @@ public class MedicationRequestBuilder extends BaseBuilder<MedicationRequest> {
         return this;
     }
 
+    public MedicationRequestBuilder buildContext(String reference) {
+        complexProperty.setContext(new Reference().setReference(reference));
+        return this;
+    }
+
     public MedicationRequestBuilder buildAuthoredOn(String date) {
         complexProperty.setAuthoredOn(date == null ? new Date() : java.sql.Date.valueOf(LocalDate.parse(date)));
+        return this;
+    }
+    public MedicationRequestBuilder buildAuthoredOnExtension(@Nonnull String expression) {
+        complexProperty.getAuthoredOnElement().addExtension(new Extension()
+                .setUrl("http://hl7.org/fhir/StructureDefinition/cqif-cqlExpression")
+                .setValue(new StringType(expression)));
         return this;
     }
 
@@ -96,6 +130,29 @@ public class MedicationRequestBuilder extends BaseBuilder<MedicationRequest> {
                         )
                         .setNumberOfRepeatsAllowed(numRepeats)
                         .setExpectedSupplyDuration((Duration) new Duration().setValue(supplyValue).setUnit(supplyUnit))
+        );
+        return this;
+    }
+
+    public MedicationRequestBuilder buildDispenseRequestExtension(int numRepeats, double supplyValue, String supplyUnit,
+                                                                  String startExpression, String endExpression)
+    {
+        complexProperty.setDispenseRequest(
+                new MedicationRequest.MedicationRequestDispenseRequestComponent()
+                        .setNumberOfRepeatsAllowed(numRepeats)
+                        .setExpectedSupplyDuration((Duration) new Duration().setValue(supplyValue).setUnit(supplyUnit))
+        );
+        complexProperty.getDispenseRequest().getValidityPeriod().addExtension(
+                new Extension()
+                        .setUrl("http://hl7.org/fhir/StructureDefinition/cqif-cqlExpression")
+                        .setValue(
+                                new StringType(
+                                        String.format(
+                                                "FHIR.Period { start: FHIR.dateTime { value: %s }, end: FHIR.dateTime { value: %s } }",
+                                                startExpression, endExpression
+                                        )
+                                )
+                        )
         );
         return this;
     }

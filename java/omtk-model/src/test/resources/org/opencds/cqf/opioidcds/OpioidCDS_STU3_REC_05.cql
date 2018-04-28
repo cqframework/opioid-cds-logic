@@ -1,8 +1,8 @@
-library OpioidCDS_STU3 version '0.1.0'
+library OpioidCDS_STU3_REC_05 version '0.1.0'
 
 using FHIR version '3.0.0'
 
-include OpioidCDS_STU3_Common version '0.1.0' called MMECommon
+include OpioidCDSCommonSTU3 version '0.1.0' called Common
 
 /*
 **
@@ -11,25 +11,30 @@ include OpioidCDS_STU3_Common version '0.1.0' called MMECommon
 */
 
 parameter UserID String
-parameter Orders List<MedicationRequest>
+parameter ContextPrescriptions List<MedicationRequest>
 
 context Patient
 
-define MMETotal:
-  MMECommon.TotalMME(Orders)
+define "Inclusion Criteria":
+  not "Exclusion Criteria"
+  and "Total MME" >= 50 'mg/d'
 
-define IsMME50OrMore:
-  MMETotal >= 50 'mg/d'
+define "Exclusion Criteria":
+  Common."End of Life Assessment"
+    or Common."Is Context Prescription End of Life Opioid?"(ContextPrescriptions)
 
-define getIndicator:
+define "Total MME":
+  Common.TotalMME(ContextPrescriptions union Common."Active Ambulatory Opioid Rx")
+
+define "Get Indicator":
   'warning'
 
-define getSummary:
+define "Get Summary":
   'High risk for opioid overdose - '
-    + case when MMETotal.value >= 90
+    + case when "Total MME".value >= 90
        then 'taper now'
        else 'consider tapering'
      end
 
-define getDetail:
-  'Total morphine milligram equivalent (MME) is ' + ToString(MMETotal) + '. Taper to less than 50.'
+define "Get Detail":
+  'Total morphine milligram equivalent (MME) is ' + ToString("Total MME") + '. Taper to less than 50.'

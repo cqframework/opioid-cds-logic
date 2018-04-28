@@ -2,7 +2,7 @@ library OpioidCDS_STU3_REC_07 version '0.1.0'
 
 using FHIR version '3.0.0'
 
-include OpioidCDS_STU3_Common version '0.1.0' called Common
+include OpioidCDSCommonSTU3 version '0.1.0' called Common
 
 /*
 **
@@ -39,48 +39,53 @@ include OpioidCDS_STU3_Common version '0.1.0' called Common
     then use EHR snoozing functionality to allow "Have assessed/will assess. Snooze 3 months."
 */
 
-parameter ContextPrescription MedicationRequest
-parameter Orders List<MedicationRequest> // includes the ContextPrescription
-parameter Encounters List<Encounter>
-parameter OpioidRiskAssessment List<Procedure>
-parameter EndOfLifeConditions List<Condition>
+parameter ContextPrescriptions List<MedicationRequest>
 
 context Patient
 
+define "Risk Assessment Interval":
+  Interval[Today() - 91 days, Today() - 1 day]
+
+define "Encounter Interval":
+  Interval[Today() - 12 months - 1 days, Today() - 1 day]
+
 define "Validate Trigger Event":
   exists(
-    ContextPrescription triggerScript
-      where Common.IsOpioidWithAmbulatoryAbusePotential(Common.ToCode(triggerScript.medication.coding[0]))
+    ContextPrescriptions triggerScript
+      where Common.ToCode(triggerScript.medication.coding[0]) in Common."Ambulatory Abuse Potential Opioids"
   )
 
 define "Inclusion Criteria":
   "Validate Trigger Event"
     and not "Exclusion Criteria"
-    and not exists ("Opioid Risk Assessment in Past 90 Days")
-    and
-      ((Common.ProbableDaysInRange(Orders, 10, 7) and exists("Encounter in past 12 months"))
-        or Common.ProbableDaysInRange(Orders, 90, 63))
+    and not exists ( "Opioid Risk Assessment in Past 90 Days" )
+    and ( "Rx Active 7 of Past 10 Days With Encounter" or "Rx Active 63 of Past 90 Days" )
 
 define "Exclusion Criteria":
-  exists (
-    Orders orders
-          where Common.IsEndOfLifeOpioid(Common.ToCode(orders.medication.coding[0]))
-  )
-  or exists(EndOfLifeConditions)
-
-define "Risk Assessment Interval":
-  Interval[Today() - 90 days, Today() - 1 day]
+  Common."End of Life Assessment"
+    or Common."Is Context Prescription End of Life Opioid?"(ContextPrescriptions)
 
 define "Opioid Risk Assessment in Past 90 Days":
-  OpioidRiskAssessment riskAssessment
-    where riskAssessment.performed."start".value in "Risk Assessment Interval"
+  [Procedure: Common."Risk Assessment"] riskAssessment
+    where date from riskAssessment.performed."start".value in day of "Risk Assessment Interval"
 
-define "Encounter Interval":
-  Interval[Today() - 1 year, Today() - 1 day]
+define "Rx Active 7 of Past 10 Days With Encounter":
+  AnyTrue(Common.ProbableDaysInRange(Common."Active Ambulatory Opioid Rx", 10, 7))
+    and exists(
+      [Encounter] E
+        where date from E.period."start".value in day of "Encounter Interval"
+    )
 
-define "Encounter in past 12 months":
-  Encounters E
-    where E.period."start".value in "Encounter Interval"
+define "Rx Active 63 of Past 90 Days":
+  AnyTrue(Common.ProbableDaysInRange(Common."Active Ambulatory Opioid Rx", 90, 63))
 
-define "Get Notification":
+define "Get Indicator":
+  'warning'
+
+define "Get Summary":
   'Patients on opioid therapy should be evaluated for benefits and harms within 1 to 4 weeks of starting opioid therapy and every 3 months or more subsequently.'
+
+define "Get Detail":
+  if "Rx Active 63 of Past 90 Days"
+    then 'No evaluation for benefits and harms associated with opioid therapy has been performed for the patient in the past 3 months'
+  else 'No evaluation for benefits and harms has been performed for the patient starting opioid therapy'
