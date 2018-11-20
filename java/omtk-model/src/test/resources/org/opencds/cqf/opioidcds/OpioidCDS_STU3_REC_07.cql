@@ -37,6 +37,9 @@ include OpioidCDSCommonSTU3 version '0.1.0' called Common
   EHR expectations:
     If not able to document/retrieve above procedure,
     then use EHR snoozing functionality to allow "Have assessed/will assess. Snooze 3 months."
+
+  Plan Definition:
+	http://build.fhir.org/ig/cqframework/opioid-cds/PlanDefinition-opioidcds-07.html
 */
 
 parameter ContextPrescriptions List<MedicationRequest>
@@ -80,12 +83,19 @@ define "Rx Active 63 of Past 90 Days":
   AnyTrue(Common.ProbableDaysInRange(Common."Active Ambulatory Opioid Rx", 90, 63))
 
 define "Get Indicator":
-  'warning'
+  if "Inclusion Criteria"
+    then 'warning'
+  else null
 
 define "Get Summary":
-  'Patients on opioid therapy should be evaluated for benefits and harms within 1 to 4 weeks of starting opioid therapy and every 3 months or more subsequently.'
+  if "Inclusion Criteria"
+    then 'Patients on opioid therapy should be evaluated for benefits and harms within 1 to 4 weeks of starting opioid therapy and every 3 months or more subsequently.'
+  else null
 
 define "Get Detail":
-  if "Rx Active 63 of Past 90 Days"
-    then 'No evaluation for benefits and harms associated with opioid therapy has been performed for the patient in the past 3 months'
-  else 'No evaluation for benefits and harms has been performed for the patient starting opioid therapy'
+  if "Inclusion Criteria"
+    then
+      if "Rx Active 63 of Past 90 Days"
+        then 'No evaluation for benefits and harms associated with opioid therapy has been performed for the patient in the past 3 months'
+      else 'No evaluation for benefits and harms has been performed for the patient starting opioid therapy'
+  else null

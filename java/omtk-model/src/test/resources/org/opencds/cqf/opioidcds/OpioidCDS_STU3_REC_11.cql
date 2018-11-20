@@ -25,6 +25,9 @@ include OpioidCDSCommonSTU3 version '0.1.0' called Common
     Ref: CDC Recommendation #11.
   EHR expectations:
     Have availability to snooze if benefits outweigh risks
+
+  Plan Definition:
+	http://build.fhir.org/ig/cqframework/opioid-cds/PlanDefinition-opioidcds-11.html
 */
 
 parameter ContextPrescriptions List<MedicationRequest>
@@ -63,12 +66,19 @@ define "Opioid with Ambulatory Care Abuse Potential":
   or exists( Common."Active Ambulatory Opioid Rx" )
 
 define "Get Indicator":
-  'warning'
+  if "Inclusion Criteria"
+    then 'warning'
+  else null
 
 define "Get Summary":
-  'Avoid prescribing opioid pain medication and benzodiazepine concurrently whenever possible.'
+  if "Inclusion Criteria"
+    then 'Avoid prescribing opioid pain medication and benzodiazepine concurrently whenever possible.'
+  else null
 
 define "Get Detail":
-  if "Validate Trigger Event For Benzodiazepine"
-    then 'The benzodiazepine prescription request is concurrent with an active opioid prescription'
-  else 'The opioid prescription request is concurrent with an active benzodiazepine prescription'
+  if "Inclusion Criteria"
+    then
+      if "Validate Trigger Event For Benzodiazepine"
+        then 'The benzodiazepine prescription request is concurrent with an active opioid prescription'
+      else 'The opioid prescription request is concurrent with an active benzodiazepine prescription'
+  else null

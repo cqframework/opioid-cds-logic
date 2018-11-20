@@ -26,6 +26,9 @@ include OpioidCDSCommonSTU3 version '0.1.0' called Common
     Ref: CDC Recommendation #4.
   EHR expectations:
     Have availability to snooze if benefits outweigh risks or if not applicable
+
+  Plan Definition:
+	http://build.fhir.org/ig/cqframework/opioid-cds/PlanDefinition-opioidcds-04.html
 */
 
 // Trigger Event Rx
@@ -65,12 +68,18 @@ define "Exclusion Criteria":
     or Common."Is Context Prescription End of Life Opioid?"(ContextPrescriptions)
 
 define "Get Indicator":
-  'warning'
+  if "Inclusion Criteria"
+    then 'warning'
+  else null
 
 define "Get Summary":
-  'Recommend use of immediate-release opioids instead of extended release/long acting opioids when starting patient on opioids.'
+  if "Inclusion Criteria"
+    then 'Recommend use of immediate-release opioids instead of extended release/long acting opioids when starting patient on opioids.'
+  else null
 
 define "Get Detail":
-  'The following medication requests(s) release rates should be re-evaluated: ' + Common.GetMedicationNames("Trigger Event Prescriptions")
+  if "Inclusion Criteria"
+    then 'The following medication requests(s) release rates should be re-evaluated: ' + Common.GetMedicationNames("Trigger Event Prescriptions")
+  else null
 
 // TODO - I would like to be able to offer the medication's immediate release form as a suggestions

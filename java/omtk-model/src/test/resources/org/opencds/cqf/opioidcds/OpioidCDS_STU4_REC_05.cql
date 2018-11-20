@@ -10,7 +10,11 @@ include OpioidCDSCommonSTU4 version '0.1.0' called Common
 **
 */
 
-parameter UserID String
+/*
+  Plan Definition:
+	http://build.fhir.org/ig/cqframework/opioid-cds/stu4/PlanDefinition-opioidcds-05.html
+*/
+
 parameter ContextPrescriptions List<MedicationRequest>
 
 context Patient
@@ -26,15 +30,26 @@ define "Exclusion Criteria":
 define "Total MME":
   Common.TotalMME(ContextPrescriptions union Common."Active Ambulatory Opioid Rx")
 
+define "Taper Now": "Total MME".value >= 90
+
+define "Consider Tapering": "Total MME".value < 90
+
 define "Get Indicator":
-  'warning'
+  if "Inclusion Criteria"
+    then 'warning'
+  else null
 
 define "Get Summary":
-  'High risk for opioid overdose - '
-    + case when "Total MME".value >= 90
-       then 'taper now'
-       else 'consider tapering'
-     end
+  if "Inclusion Criteria"
+    then
+      'High risk for opioid overdose - '
+        + case when "Taper Now"
+           then 'taper now'
+           else 'consider tapering'
+         end
+  else null
 
 define "Get Detail":
-  'Total morphine milligram equivalent (MME) is ' + ToString("Total MME") + '. Taper to less than 50.'
+  if "Inclusion Criteria"
+    then'Total morphine milligram equivalent (MME) is ' + ToString("Total MME") + '. Taper to less than 50.'
+  else null

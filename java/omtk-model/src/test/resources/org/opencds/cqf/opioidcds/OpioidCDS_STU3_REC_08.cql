@@ -34,6 +34,9 @@ include OpioidCDSCommonSTU3 version '0.1.0' called Common
       For now, defining value sets as descendants of:
         ICD10: F10-F19, Mental and behavioral disorders due to psychoactive substance use
         ICD9: 304, Drug dependence and 303, Alcohol dependence syndrome
+
+  Plan Definition:
+	http://build.fhir.org/ig/cqframework/opioid-cds/PlanDefinition-opioidcds-08.html
 */
 
 parameter ContextPrescriptions List<MedicationRequest>
@@ -73,10 +76,14 @@ define "Has Substance Abuse History":
   exists ( [Condition: Common."Substance Abuse"] )
 
 define "Get Indicator":
-  'warning'
+  if "Inclusion Criteria"
+    then 'warning'
+  else null
 
 define "Get Summary":
-  'Incorporate into the management plan strategies to mitigate risk; including considering offering naloxone when factors that increase risk for opioid overdose are present'
+  if "Inclusion Criteria"
+    then 'Incorporate into the management plan strategies to mitigate risk; including considering offering naloxone when factors that increase risk for opioid overdose are present'
+  else null
 
 define "Detail Descriptions":
 	{
@@ -89,7 +96,10 @@ define "Detail List":
 	Combine("Detail Descriptions" dd where dd.hasCondition return dd.text, ', ')
 
 define "Get Detail":
-	'Consider offering naloxone given following risk factor(s) for opioid overdose: ' 
-    + if "Detail List" is not null and "Detail List" != '' 
-	  then "Detail List" + '.'
-    else 'N/A.'
+  if "Inclusion Criteria"
+    then
+      'Consider offering naloxone given following risk factor(s) for opioid overdose: '
+        + if "Detail List" is not null and "Detail List" != ''
+         then "Detail List" + '.'
+        else 'N/A.'
+  else null
