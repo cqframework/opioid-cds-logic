@@ -2,6 +2,7 @@ library OpioidCDS_STU4_REC_08 version '0.1.0'
 
 using FHIR version '3.2.0'
 
+include FHIRHelpers version '3.2.0' called FHIRHelpers
 include OpioidCDSCommonSTU4 version '0.1.0' called Common
 
 /*
@@ -46,17 +47,18 @@ context Patient
 define "Validate Trigger Event":
   exists(
     ContextPrescriptions triggerScript
-      where Common.ToCode(triggerScript.medication.coding[0]) in Common."Ambulatory Abuse Potential Opioids"
+      where triggerScript.medication in Common."Ambulatory Abuse Potential Opioids"
   )
 
 define "Inclusion Criteria":
-  "Validate Trigger Event"
-  and not "Exclusion Criteria"
-  and (
-    "Total MME" >= 50 'mg/d'
-      or "On Benzodiazepine"
-      or "Has Substance Abuse History"
-  )
+  AgeInYears() >= 18
+    and "Validate Trigger Event"
+    and not "Exclusion Criteria"
+    and (
+      "Total MME" >= 50 'mg/d'
+        or "On Benzodiazepine"
+        or "Has Substance Abuse History"
+    )
 
 define "Exclusion Criteria":
   "On Naloxone"

@@ -2,36 +2,35 @@ library OpioidCDSCommonSTU3 version '0.1.0'
 
 using FHIR version '3.0.0'
 
+include FHIRHelpers version '3.0.0' called FHIRHelpers
 include OMTKLogic version '0.0.1' called OMTKLogic
 
 codesystem "SNOMED": 'http://snomed.info/sct'
 codesystem "Medication Request Category Codes": 'http://hl7.org/fhir/medication-request-category'
 
-valueset "Benzodiazepines": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/benzodiazepines'
-valueset "End of Life Conditions": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/end-of-life-conditions'
+valueset "Benzodiazepines": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/benzodiazepines'
+// TODO: Fix this name
+valueset "End of Life Conditions": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/end-of-life-conditions'
 // Harvested from VSAC - OID: 2.16.840.1.113762.1.4.1108.15
-valueset "Hospice Disposition": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/hospice-disposition'
-valueset "Hospice Finding Codes": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/hospice-finding'
-valueset "Hospice Procedure Codes": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/hospice-procedure'
-valueset "Illicit Drug Screening": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/illicit-drug-urine-screening'
+// NOTE: This harvest note is incorrect, none of the following 3 value sets contain any of the codes in the above referenced valueset
+// Rob will construct an appropriate hospice value set aligned with current eCQM program usage and we will use that when available
+valueset "Hospice Disposition": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/hospice-disposition'
+valueset "Hospice Finding Codes": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/hospice-finding'
+valueset "Hospice Procedure Codes": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/hospice-procedure'
+valueset "Illicit Drug Screening": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/illicit-drug-urine-screening'
 // Harvested from VSAC - OID: 2.16.840.1.113883.3.526.3.1259
-valueset "Limited Life Expectancy Conditions": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/limited-life-expectancy-conditions'
-valueset "Long Acting Opioids": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/long-acting-opioids'
-// Harvested from VSAC - OID: 2.16.840.1.113762.1.4.1116.351
-valueset "Metastatic Cancer": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/metastatic-cancer'
-valueset "Naloxone": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/naloxone'
-valueset "Risk Assessment": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/opioid-abuse-assessment'
-valueset "Opioid Drug Screening": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/opioid-urine-screening'
-valueset "Ambulatory Abuse Potential Opioids": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/opioids-abused-in-ambulatory-care'
-valueset "End Of Life Opioids": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/opioids-indicating-end-of-life'
-valueset "Substance Abuse": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/substance-abuse'
+valueset "Limited Life Expectancy Conditions": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/limited-life-expectancy-conditions'
+valueset "Long Acting Opioids": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/long-acting-opioids'
+valueset "Naloxone": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/naloxone'
+valueset "Risk Assessment": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/opioid-abuse-assessment'
+valueset "Opioid Drug Screening": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/opioid-urine-screening'
+valueset "Ambulatory Abuse Potential Opioids": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/opioids-abused-in-ambulatory-care'
+valueset "End Of Life Opioids": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/opioids-indicating-end-of-life'
+valueset "Substance Abuse": 'http://fhir.org/guides/cdc/opioid-cds/ValueSet/substance-abuse'
 
-// Valuesets that are not currently used
-valueset "Opioids": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/opioids'
-valueset "Codeine Cough Meds": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/opioids-codeine-cough-meds'
-valueset "Short Acting Opioids": 'http://hl7.org/fhir/ig/opioid-cds/ValueSet/short-acting-opioids'
-
+// TODO: Turn this into a valueset
 code "Referral to Hospice": '306205009' from "SNOMED"
+// TODO: Turn this into a valueset
 code "Outpatient": 'outpatient' from "Medication Request Category Codes"
 
 // TODO: Capture process decisions for long-term opioid use
@@ -40,26 +39,26 @@ define IsForChronicPain: true
 define "Active Ambulatory Opioid Rx":
   [MedicationRequest: "Ambulatory Abuse Potential Opioids"] Rx
     where Rx.status.value = 'active'
-      and ToCode(Rx.category.coding[0]) ~ "Outpatient"
+      and ToCodes(Rx.category.coding) contains "Outpatient"
 
 define "Active Ambulatory Benzodiazepine Rx":
   [MedicationRequest: "Benzodiazepines"] Rx
     where Rx.status.value = 'active'
-      and ToCode(Rx.category.coding[0]) ~ "Outpatient"
+      and ToCodes(Rx.category.coding) contains "Outpatient"
 
 define "Active Ambulatory Naloxone Rx":
   [MedicationRequest: "Naloxone"] Rx
     where Rx.status.value = 'active'
-      and ToCode(Rx.category.coding[0]) ~ "Outpatient"
+      and ToCodes(Rx.category.coding) contains "Outpatient"
 
 define "Ambulatory Opioid Rx":
   [MedicationRequest: "Ambulatory Abuse Potential Opioids"] Rx
-      where ToCode(Rx.category.coding[0]) ~ "Outpatient"
+      where ToCodes(Rx.category.coding) contains "Outpatient"
 
 define function "Is Context Prescription End of Life Opioid?" (ContextPrescriptions List<MedicationRequest>):
   exists (
     ContextPrescriptions Rx
-      where ToCode(Rx.medication.coding[0]) in "End Of Life Opioids"
+      where Rx.medication in "End Of Life Opioids"
   )
 
 define "End of Life Assessment":
@@ -101,9 +100,10 @@ define "End of Life Assessment":
       [Encounter] E
         where
           (
-            if E.hospitalization.dischargeDisposition.coding[0] is null
+            if E.hospitalization.dischargeDisposition.coding is null
+                or not exists (E.hospitalization.dischargeDisposition.coding)
               then false
-            else ToCode(E.hospitalization.dischargeDisposition.coding[0]) in "Hospice Disposition"
+            else E.hospitalization.dischargeDisposition in "Hospice Disposition"
           )
           and E.status.value in { 'planned', 'arrived', 'in-progress', 'finished', 'onleave' }
     )
@@ -187,7 +187,6 @@ define function MME(prescriptions List<MedicationRequest>):
       conversionFactor: mme.conversionFactor,
       mme: mme.mme
     }
-    // sort by if isDraft then 0 else 1, rxNormCode.code
 
 define function TotalMME(prescriptions List<MedicationRequest>):
   System.Quantity {
@@ -223,22 +222,33 @@ define function GetPeriodDays(value System.String):
     when value = 'mo' then 30.0
     when value = 'h' then 1.0/24.0
     when value = 'min' then 1.0/24.0*60.0
+    when value = 's' then 1.0/24.0*60.0*60.0
+    when value = 'ms' then 1.0/24.0*60.0*60.0*1000.0
     else 1.0
   end
 
-define function GetDurationInDays(value FHIR.Duration):
-  case
-    when StartsWith(value.unit.value, 'a') then value.value.value * 365.0
-    when StartsWith(value.unit.value, 'mo') then value.value.value * 30.0
-    else value.value.value
-  end
+  define function GetDurationInDays(value FHIR.Duration):
+    case
+      when StartsWith(value.unit.value, 'a') then value.value.value * 365.0
+      when StartsWith(value.unit.value, 'mo') then value.value.value * 30.0
+      when StartsWith(value.unit.value, 'wk') then value.value.value * 7.0
+      when StartsWith(value.unit.value, 'd') then value.value.value
+      when StartsWith(value.unit.value, 'h') then value.value.value / 24.0
+      when StartsWith(value.unit.value, 'min') then value.value.value / 60.0 / 24.0
+      when StartsWith(value.unit.value, 's') then value.value.value / 60.0 / 60.0 / 24.0
+      when StartsWith(value.unit.value, 'ms') then value.value.value / 60.0 / 60.0 / 24.0 / 1000.0
+      else Message(1000, true, 'Undefined', 'Error', 'Unsupported duration unit')
+    end
 
 define function GetIngredient(rxNormCode Code):
   OMTKLogic.GetIngredients(rxNormCode).ingredientName
 
+define function GetIngredients(rxNormCodes List<Code>):
+  rxNormCodes rnc return GetIngredient(rnc)
+
 define function GetMedicationNames(medications List<MedicationRequest>):
   medications M
-    return OMTKLogic.GetIngredients(ToCode(M.medication.coding[0])).rxNormCode.display
+    return OMTKLogic.GetIngredients(ToCodes(M.medication.coding)).rxNormCode.display
 
 /*
 *  Conversion Functions
@@ -251,6 +261,9 @@ define function ToCode(coding FHIR.Coding):
     version: coding.version.value,
     display: coding.display.value
   }
+
+define function ToCodes(coding List<FHIR.Coding>):
+  coding c return ToCode(c)
 
 define function ToQuantity(quantity FHIR.Quantity):
   System.Quantity { value: quantity.value.value, unit: quantity.unit.value }
